@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regular Expressions Guide</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            font-size: 12px;
+        }
+        h1, h2, h3 {
+            color: #0078D4;
+        }
+        p, li {
+            margin-bottom: 15px;
+        }
+        a {
+            color: #0078D4;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        code {
+            background-color: #EDEDED;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Comprehensive Guide to Regular Expressions (Regex)</h1>
+    
+    <p><a href="docs\\main_menu.html">Back to Main Menu</a></p>
+    
+    <p>Regular expressions, commonly referred to as "regex" or "regexp", are incredibly powerful for text processing. They provide a mechanism to search, match, and manipulate text based on specific patterns. This guide aims to provide a deep dive into understanding and effectively using regex.</p>
+    
+    <h2>Core Principles</h2>
+    <p>Before diving into the specifics, it's crucial to understand the philosophy behind regex:</p>
+    <ul>
+        <li>Regex operates by matching specific patterns in text.</li>
+        <li>It doesn't "understand" the text but rather "looks for patterns".</li>
+        <li>Regex can be simple (matching a word) or complex (matching an email pattern).</li>
+    </ul>
+    
+    <h2>Special Characters</h2>
+    <p>At the heart of regex are special characters that hold specific meanings:</p>
+    <ul>
+        <li><code>.</code> - Matches any single character except a newline.</li>
+        <li><code>\d</code> - Matches any single digit (0-9).</li>
+        <li><code>\D</code> - Matches any character that is not a digit.</li>
+        <li><code>\w</code> - Matches any word character, which includes alphanumeric characters and underscores.</li>
+        <li><code>\W</code> - Matches any non-word character.</li>
+        <li><code>\s</code> - Matches any whitespace character, such as spaces, tabs, and line breaks.</li>
+        <li><code>\S</code> - Matches any non-whitespace character.</li>
+        <li><code>^</code> - Matches the start of a string.</li>
+        <li><code>$</code> - Matches the end of a string.</li>
+        <li><code>\b</code> - Matches a word boundary, which is the position between a word character and a non-word character.</li>
+    </ul>
+    
+    <h2>Quantifiers</h2>
+    <p>Quantifiers indicate the quantity of characters to match:</p>
+    <ul>
+        <li><code>*</code> - Matches 0 or more repetitions of the preceding character or group.</li>
+        <li><code>+</code> - Matches 1 or more repetitions.</li>
+        <li><code>?</code> - Matches 0 or 1 repetition of the preceding character or group.</li>
+        <li><code>{n}</code> - Matches exactly n repetitions.</li>
+        <li><code>{n,}</code> - Matches n or more repetitions.</li>
+        <li><code>{n,m}</code> - Matches between n and m repetitions.</li>
+    </ul>
+    
+    <h2>Character Sets and Groups</h2>
+    <p>Define specific sets of characters or groups:</p>
+    <ul>
+        <li><code>[abc]</code> - Matches any one character between the brackets (a, b, or c).</li>
+        <li><code>[^abc]</code> - Matches any one character not between the brackets.</li>
+        <li><code>(abc)</code> - A group that matches the exact sequence of characters within the parentheses.</li>
+        <li><code>a|b</code> - Matches either a or b.</li>
+        <li><code>(?:abc)</code> - A non-capturing group that matches the sequence but doesn't capture the matched text. Useful for applying quantifiers to groups without capturing.</li>
+    </ul>
+    
+    <h2>Backreferences</h2>
+    <p>They allow you to reuse parts of your regex in the same pattern:</p>
+    <ul>
+        <li><code>\1</code> - Refers to the first captured group.</li>
+        <li><code>\2</code> - Refers to the second captured group, and so on.</li>
+    </ul>
+    
+    <h2>Lookaheads and Lookbehinds</h2>
+    <p>These are advanced features that allow you to assert that some characters do or do not follow or precede others, without including them in the match:</p>
+    <ul>
+        <li><code>(?=abc)</code> - Positive lookahead. Asserts that what follows the current position in the string is "abc".</li>
+        <li><code>(?!abc)</code> - Negative lookahead. Asserts that what follows isn't "abc".</li>
+        <li><code>(?<=abc)</code> - Positive lookbehind. Asserts that what precedes the current position in the string is "abc".</li>
+        <li><code>(?&lt;!abc)</code> - Negative lookbehind. Asserts that what precedes isn't "abc".</li>
+    </ul>
+    
+    <h2>Flags</h2>
+    <p>Flags modify how the regex searches:</p>
+    <ul>
+        <li><code>i</code> - Case-insensitive search.</li>
+        <li><code>g</code> - Global search. Finds all matches.</li>
+        <li><code>m</code> - Multi-line search. Treats string as multiple lines.</li>
+        <li><code>u</code> - Full Unicode matching. Treat pattern as a sequence of Unicode code points.</li>
+        <li><code>y</code> - Sticky search. Matches from the current position in the target string.</li>
+    </ul>
+    
+    <h2>Common Use Cases</h2>
+    <p>Here are some common regex patterns:</p>
+    <ul>
+        <li><code>^abc</code> - Matches any string that starts with "abc".</li>
+        <li><code>abc$</code> - Matches any string that ends with "abc".</li>
+        <li><code>\d{2,4}</code> - Matches a sequence of 2 to 4 digits.</li>
+        <li><code>[A-Za-z]</code> - Matches any single uppercase or lowercase letter.</li>
+        <li><code>\bword\b</code> - Matches the word "word" as a whole word, not as part of another word.</li>
+    </ul>    
+    <p><a href="docs\\main_menu.html">Back to Main Menu</a></p>
+    
+    </body>    
+</html>

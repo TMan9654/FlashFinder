@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Comparison with FlashFinder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            font-size: 12px;
+        }
+        h1, h2, h3 {
+            color: #0078D4;
+        }
+        p, li {
+            margin-bottom: 15px;
+        }
+        a {
+            color: #0078D4;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<h1>File Comparison with FlashFinder</h1>
+
+<p><a href="docs\\main_menu.html">Back to Main Menu</a></p>
+
+<p>FlashFinder's file comparison feature allows users to easily identify differences between two files. Whether you're comparing text documents, images, or other file types, this guide will help you understand how the comparison feature works.</p>
+
+<h2>Basic File Comparison</h2>
+<p>To start a basic comparison:</p>
+<ol>
+    <li>Select the two PDF files you want to compare.</li>
+    <li>Right-click and choose the "Compare" option.</li>
+    <li>FlashFinder will highlight the differences between the files using the specified output options.</li>
+</ol>
+
+<h2>Handling Large Files</h2>
+<p>Comparing large files might take a bit longer. Larger page sizes also have an effect on processing times and may take longer.</p>
+<p>High DPI levels will also result in long processing times. Choose a level that suits your needs best.</p>
+
+<h2>Navigating the Compare Settings</h2>
+<p>FlashFinder has numerous options to customize the file comparison output</p>
+
+<h3>Output</h3>
+<p>There are several output options the control how the comparison file is output.</p>
+<ul>
+    <li><strong>DPI Level</strong> stands for "Dots Per Inch" aka "Pixels Per Inch". It is essentially the resolution of the output. Higher DPI settings mean more pixels to process resulting in longer processing times but a higher quality output</li>
+    <p>Note: It is reccommended to use the lowest DPI setting you require to ensure timely comparison times.</p>
+    <p>WARNING: High DPI settings use high amounts of RAM, combined with large files (or large pages), This can be a problem in some cases.</p>
+
+    <li><strong>Page size</strong> sets the output comparison files page size. This can be important when printing the comparison.</li>
+    <p>Note: The output page size has minimal effect on the processing time.</p>
+
+    <li><strong>Output path</strong> determines where the comparison file will be saved once complete.</li>
+    <p><strong>Source path:</strong> The output file is saved to the folder location where the original files were saved.</p>
+    <p><strong>Default path:</strong> The output file is saved to the "Documents" folder.</p>
+    <p><strong>Specified path:</strong> The output file is saved to the path specified in the "Specified Path" bar.</p>
+</ul>
+
+<h3>Files to Include</h3>
+<p>The comaprison tool has a few page options that will show different details to aid in analyses of the files.</p>
+<ul>
+    <li><strong>New copy:</strong> The output file will contain the newest version of the original files.</li>
+    
+    <li><strong>Old copy:</strong> The output file will contain the older version of the original files.</li>
+
+    <li><strong>Markup:</strong> The output file will contain a marked up version of the newest file.</li>
+    <p>Markups include green boxes indicating large changes (Focus points to analyse further) and red highlights to indicate all other changes between the files.</p>
+
+    <li><strong>Difference:</strong> The output file will contain a minimalist difference copy showing only changes between the files.</li>
+    <p>This is essentially taking the newest file and subtracting the older file leaving only the pixels that have changed left behind.</p>
+    <p>The differences are shown with blue highlights being the newer file (Added changes over the older file) and red highlights indicating the older file (Things that have been removed in the newer file).</p>
+
+    <li><strong>Overlay:</strong> The output file will contain a the older file in red with the newer file overlayed on top.</li>
+    <p>The newer file is layed on top of a red version of the old file which results in any removed items shown in red.</p>
+</ul>
+<p>Note: "New" and "Old" are in reference with the default settings where the "Main Page" setting (See Main Page) is set to "New Document".</p>
+<p>If the setting "Main Page" is set to "Old Document" then the Markup, Difference, and Overlay pages will use the older file as the main file and the opposite will be true.</p>
+<p>Ex. "Markup" will markup the older file rather then the newer file.</p>
+
+<h3>General</h3>
+<p>The comparison tool has several options to further customize the output.</p>
+<ul>
+    <li><strong>Scale pages:</strong> Scales the original document pages to be the set page size prior to comparing.</li>
+    <p>This setting helps when comparing files that do not share the same page size. This however can reduce the quality of the comparison if scaling a large page size to a small page size. (Reduces file size)</p>
+    <p>This setting can also be used if comparison results are not as expected.</p>
+    <p>FlashFinder will try to auto correct any comparison where page sizes are not the same. Results may vary in this case.</p>
+
+    <li><strong>Black and white:</strong> Sets the output pages to be in black and white. (Reduces file size)</li>
+
+    <li><strong>Grayscale:</strong> Similar to black and white but allows for gray hues that can occur when mixing black and white (shading). (Reduces file size)</li>
+
+    <li><strong>Reduce size:</strong> Reduces the output file size which a small loss in quality. Useful when trying to share the comparison file.</li>
+</ul>
+
+<h3>Main Page</h3>
+<p>The main page setting controls which file is the focus when comparing. As noted in the Files to Include section, the comparison outputs differently based on this setting</p>
+<ul>
+    <li><strong>New document (Default):</strong> Sets the focus to be the newest of the files.</li>
+
+    <li><strong>Old document:</strong> Sets the focus to be the oldest of the files.</li>
+</ul>
+
+<p><a href="docs\\main_menu.html">Back to Main Menu</a></p>
+
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General Usage of FlashFinder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            font-size: 12px;
+        }
+        h1, h2, h3 {
+            color: #0078D4;
+        }
+        p, li {
+            margin-bottom: 15px;
+        }
+        a {
+            color: #0078D4;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<h1>FlashFinder Documentation</h1>
+
+<p><a href="docs\\main_menu.html">Back to Main Menu</a></p>
+
+<p>Welcome to FlashFinder, a powerful and intuitive file management and search utility designed by TerrinTech. This documentation aims to provide a comprehensive guide on how to effectively utilize the many features FlashFinder offers.</p>
+
+<h2>Introduction</h2>
+<p>FlashFinder is a modern, feature-rich file browser that combines quick file navigation with advanced search capabilities, making it easy to manage and locate your files.</p>
+
+<h2>Main Features</h2>
+<ul>
+    <li><strong>Quick Navigation:</strong> Navigate through your files seamlessly with the back, forward, and up navigation buttons.</li>
+    <li><strong>Quick Select:</strong> Quickly select items by typing the first letter and cycle through files beginning with that letter.</li>
+    <li><strong>Advanced Search:</strong> With an integrated search bar, FlashFinder offers rapid file searching across all drives or within specific directories.</li>
+    <li><strong>Quick Access Sidebar:</strong> Easily access frequently used or pinned directories and files from the Quick Access Sidebar.</li>
+    <li><strong>File Preview:</strong> Get a quick preview of selected files without having to open them.</li>
+    <li><strong>Context Menus:</strong> Access various file operations with right-click context menus.</li>
+    <li><strong>Undo/Redo:</strong> Made a mistake? Use the undo and redo shortcuts to revert actions.</li>
+    <li><strong>Custom Themes:</strong> Enjoy a user interface that adjusts according to your system's theme - light or dark.</li>
+    <li><strong>Status and Info Bar:</strong> Stay informed with real-time updates on file operations, indexing status, and more.</li>
+    <li><strong>Tabbed Browsing:</strong> Browse multiple differnet paths in 1 FlashFinder window.</li>
+</ul>
+
+<h2>Navigation</h2>
+<p>At the core of FlashFinder is its navigation system. With the navigation toolbar, you can:</p>
+<ul>
+    <li>Go <strong>Back</strong> to previously viewed directories.</li>
+    <li>Move <strong>Forward</strong> if you've gone back.</li>
+    <li>Move <strong>Up</strong> one directory level.</li>
+</ul>
+<p>The address bar also provides a breadcrumb-style navigation, allowing for quick jumps to any directory level.</p>
+
+<p>The main window makes use of a tabbed browsing interface allowing for the viewing of multiple direcotries in 1 window.</p>
+<ul>
+    <li><strong>Creating a new tab:</strong> Simply click the "+" button in the top right corner of the view.</li>
+    <li><strong>Renaming a tab:</strong> To rename a tab, double click the tab title and then enter a new title.</li>
+    <li><strong>Deleting tabs:</strong> Simply click the "X" button in the tab to close it.</li>
+    <li><strong>Moving files between tabs:</strong> To move files between tabs, drag a file over the tab and it will open the tab after a short delay, then drop the file as necessary.</li>
+</ul>
+
+<h2>Search</h2>
+<p>FlashFinder's advanced search mechanism lets you:</p>
+<ul>
+    <li>Quickly search for files across all drives.</li>
+    <li>View search results in a dedicated dock.</li>
+    <li>Use regular expressions for complex search patterns.</li>
+    <li>Toggle between different search modes for more refined results.</li>
+    <li>Use commands for searching.</li>
+</ul>
+<p>Refer to <a href="docs\\advanced_searching.html">Advanced Searching</a> for more information.</p>
+
+<h2>Quick Access & Pinned Items</h2>
+<p>The Quick Access sidebar provides rapid access to frequently used directories and files. You can also pin your favorite directories or files for even faster access.</p>
+<p>The button to hide and show the quick access sidebar is on the left side of the bottom toolbar.</p>
+
+<h2>File Preview</h2>
+<p>Clicking on a file provides a quick preview in the dedicated Preview Dock. This is especially useful for getting a glimpse of file contents without the need for opening it in a separate application.</p>
+<p>The button to open the preview is in the left side of the bottom toolbar.</p>
+<ul>
+    <li><strong>Zoom:</strong> <code>Ctrl + Scroll</code> - Zooms to the cursor.</li>
+    <li><strong>Horizontal scroll:</strong> <code>Shift + Scroll</code> - Scrolls the preview horizontally.</li>
+</ul>
+
+<h2>File Operations</h2>
+<p>FlashFinder offers a plethora of file operations right at your fingertips:</p>
+<ul>
+    <li>Copy, Cut, and Paste files or directories.</li>
+    <li>Quickly create new files or folders.</li>
+    <li>Delete files or move them to the trash.</li>
+    <li>Rename files with ease.</li>
+    <li>Move files to a new location.</li>
+</ul>
+
+<h2>Breadcrumbs Navigation</h2>
+<p>The Breadcrumbs Navigation system is a feature of FlashFinder that allows users to understand their current directory position and navigate swiftly through the filesystem hierarchy. It provides a visual representation of the directory path, where each directory is clickable, allowing users to jump directly to that directory.</p>
+
+<h3>Components</h3>
+<ol>
+    <li><strong>Address Bar Widget:</strong> The primary widget that houses the breadcrumbs navigation system.</li>
+    <li><strong>Breadcrumb Button:</strong> Represents each directory segment in the breadcrumbs trail. Each button is clickable, and some can also accept drag-and-drop actions for files.</li>
+</ol>
+
+<h3>Functionalities</h3>
+
+<h4>Switching Views</h4>
+<p>The BreadcrumbsBar widget offers two main views:</p>
+<ul>
+    <li><strong>Breadcrumbs View:</strong> Represents the directory path as a series of clickable buttons.</li>
+    <li><strong>Line Edit View:</strong> Represents the directory path as editable text. This view is useful for directly typing or pasting a path.</li>
+</ul>
+<p>The user can switch between the Line Edit View and the Breadcrumbs View by clicking off a button or clicking the "..." button for long paths.</p>
+
+<h4>Navigation</h4>
+<p>Clicking on any segment (button) in the breadcrumbs trail will navigate the FlashFinder application directly to that directory.</p>
+
+<h4>Drag-and-Drop</h4>
+<p>FlashFinder supports drag-and-drop actions. When files are dragged onto a Breadcrumb Button, they can be moved to the represented directory, enhancing the user's ability to organize files effortlessly.</p>
+<p>Optionally, FlashFinder aslo supports directly going to a path or launch a app/file in its defalt program when entered in the line edit mode.</p>
+
+<h4>Adjusting Breadcrumbs</h4>
+<p>As the application window is resized, or the directory depth increases, the breadcrumbs adjust dynamically. If the full path cannot be displayed due to space constraints, the Breadcrumbs Bar intelligently truncates the path and presents an ellipsis ("...") button. Clicking this button allows users to view and navigate to hidden parts of the path.</p>
+
+<h2>Status & Information Bar</h2>
+<p>The bottom toolbar of FlashFinder keeps you informed:</p>
+<ul>
+    <li>View the current status of file operations or searches.</li>
+    <li>Keep track of the number of indexed files for faster search results.</li>
+    <li>Get a quick count of files in the current directory.</li>
+</ul>
+
+<h2>Settings</h2>
+<p>The "General" settings tab provides a few options to customize FlashFinder.</p>
+<ul>
+    <li><strong>Scroll To:</strong> sets whether the main view will scroll to the selected search result item automatically or not.</li>
+    <li><strong>Replace Duplicates:</strong> sets whether you will be prompted to replace or rename the duplicate pasted file.</li>
+    <li><strong>External Drop Mode:</strong> sets the way item drops from outside FlashFinder are handled. Options include pasting the file (Creating a new copy) or moveing the file (if possible, moves the file to the current path).</li>
+</ul>
+
+
+<h2>Permission Modes</h2>
+<ul>
+    <li><strong>Read Mode:</strong> In this mode, users have the ability to view files and directories but are restricted from making any modifications. This includes actions like editing, moving, renaming, or deleting files and directories.</li>
+    <li><strong>Write Mode:</strong> When toggled to this mode, users gain the capability to make changes to the files and directories. This includes creating, editing, moving, renaming, and deleting operations.</li>
+</ul>
+
+<h3>Switching Permissions</h3>
+<p>The permission mode can be swiftly toggled using the "Access" button situated on the bottom toolbar of the FlashFinder application. This button displays the current mode - either "Read" or "Write". Simply clicking on this button will switch between the two modes, providing an intuitive mechanism for users to control their level of access.</p>
+
+<h3>Permission Warnings</h3>
+<p>If a user attempts an action that is not permitted in the current mode, FlashFinder will promptly display a warning message. For instance, if a user tries to edit a file while in "Read" mode, a notification will alert them about the lack of required permissions. This ensures that users are always aware of their current permissions and prevents unintentional modifications.</p>
+
+<h2>Keyboard Shortcuts</h2>
+<p>Efficiently navigate and manage your files with the following shortcuts:</p>
+<ul>
+    <li><strong>Copy Item:</strong> <code>Ctrl + C</code> - Copies the selected item(s).</li>
+    <li><strong>Copy Item Name:</strong> <code>Shift + Alt + C</code> - Copies the name of the selected item (including the file extension).</li>
+    <li><strong>Copy Item Path:</strong> <code>Ctrl + Shift + C</code> - Copies the path of the selected item.</li>
+    <li><strong>Copy Current Path:</strong> <code>Ctrl + Alt + C</code> - Copies the current directory path.</li>
+    <li><strong>Paste Item:</strong> <code>Ctrl + V</code> - Pastes item(s) from the clipboard.</li>
+    <li><strong>Move Item:</strong> <code>Ctrl + M</code> - Moves the selected item(s).</li>
+    <li><strong>Rename Item:</strong> <code>Ctrl + R</code> - Renames the selected item.</li>
+    <li><strong>Delete Item:</strong> <code>Del</code> - Moves the selected item(s) to trash.</li>
+    <li><strong>New File:</strong> <code>Ctrl + N</code> - Creates a new file.</li>
+    <li><strong>New Folder:</strong> <code>Ctrl + Shift + N</code> - Creates a new folder.</li>
+    <li><strong>Change Access:</strong> <code>Ctrl + Shift + A</code> - Modifies access permissions.</li>
+    <li><strong>Undo:</strong> <code>Ctrl + Z</code> - Undoes the last action.</li>
+    <li><strong>Open Item:</strong> <code>Return</code> - Opens the selected item.</li>
+    <li><strong>Search:</strong> <code>Ctrl + F</code> - Focuses on the search bar.</li>
+    <li><strong>Go to Parent Directory:</strong> <code>Backspace</code> - Navigates to up a directory level.</li>
+    <li><strong>Show Properties:</strong> <code>Alt + Enter</code> - Displays the properties of the selected item.</li>
+    <li><strong>Add to Favorites:</strong> <code>Ctrl + B</code> - Pins the selected item to the sidebar.</li>
+    <li><strong>Open Settings:</strong> <code>Ctrl + I</code> - Opens the settings pane.</li>
+    <li><strong>Select All:</strong> <code>Ctrl + A</code> - Selects all items in the view.</li>
+    <li><strong>Open a new instance</strong> <code>Ctrl + Click</code> on the title bar - Opens a new FlashFinder window.</li>
+    <li><strong>New Tab:</strong> <code>Ctrl + T</code> - Create a new tab.</li>
+    <li><strong>Quick Select:</strong> <code>Any Character</code> - Cycles thorugh items that start with the character.</li>
+</ul>
+
+<p><a href="docs\\main_menu.html">Back to Main Menu</a></p>
+</body>
+</html>

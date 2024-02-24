@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changelog</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            font-size: 12px;
+        }
+        h1, h2, h3 {
+            color: #0078D4;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+            counter-reset: item;
+        }
+        li {
+            padding: 5px 0;
+            color: #333;
+        }
+        li:before {
+            counter-increment: item;
+            content: counters(item, ".") ". ";
+        }
+        ul p {
+            margin-left: 20px;
+            margin-top: 2px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+<!-- TO DO:
+    Bug fixes:
+
+    DONE    Traceback (most recent call last): Problem with saving over existing comparison file
+        File "C:\Users\tburns\OneDrive\Desktop\Code\Python\FlashFinder\FlashFinder.py", line 638, in run
+            output_file_path = self.handle_files(self.files)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "C:\Users\tburns\OneDrive\Desktop\Code\Python\FlashFinder\FlashFinder.py", line 802, in handle_files
+            pdf.set_toc(toc)
+            ^^^^^^^^^^^^^^^^^
+        File "c:\Users\tburns\Downloads\Software\Portable Python\WPy64-31150\python-3.11.5.amd64\Lib\site-packages\fitz\fitz.py", line 4721, in save
+            return _fitz.Document_save(self, filename, garbage, clean, deflate, deflate_images, deflate_fonts, incremental, ascii, expand, linear, no_new_id, appearance, pretty, encryption, permissions, owner_pw, user_pw)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        RuntimeError: cannot remove file 'C:/Users/tburns/Desktop/Maxfield/JOBS/COMPARISONS/28441-4106D; PIPING - AQUA MANIFOLD/28441-4106D-R1; PIPING - AQUA MANIFOLD Comparison.pdf': Permission denied
+
+    DONE    Traceback (most recent call last): Auto page size wasnt giving correct value (page size incorporates DPI? 72 DPI?)
+        File "C:\Users\tburns\OneDrive\Desktop\Code\Python\FlashFinder\FlashFinder.py", line 639, in run
+            output_file_path = self.handle_files(self.files)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "C:\Users\tburns\OneDrive\Desktop\Code\Python\FlashFinder\FlashFinder.py", line 758, in handle_files
+            markup = self.mark_differences(image1, image2)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "C:\Users\tburns\OneDrive\Desktop\Code\Python\FlashFinder\FlashFinder.py", line 681, in mark_differences
+            output.append(marked_image.resize((int(self.PAGE_SIZE[0] * self.DPI_LEVEL), int(self.PAGE_SIZE[1] * self.DPI_LEVEL))))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "C:\Users\tburns\Downloads\Software\Portable Python\WPy64-31150\python-3.11.5.amd64\Lib\site-packages\PIL\Image.py", line 2171, in resize
+            im = im.resize(size, resample, box)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "C:\Users\tburns\Downloads\Software\Portable Python\WPy64-31150\python-3.11.5.amd64\Lib\site-packages\PIL\Image.py", line 2193, in resize
+            return self._new(self.im.resize(size, resample, box))
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        MemoryError
+    
+    QThread: Destroyed while thread is still running
+    QFileSystemWatcher: FindNextChangeNotification failed for "C:\Users\tburns\Desktop\Maxfield\JOBS\NVIS Approvals\31957"  (Access is denied.)
+    
+DONE    Fix update function
+DONE    Fix "Browse in new tab" to "Browse to in new tab" if is a file and make it actually browse to as well
+DONE    Add better chance for no zombie processes
+DONE    Add excluded indexer paths
+DONE    Add duplicate tab action
+DONE    Open in new tab - main view (browse to and browse in new tab)
+DONE    Fix error in indexer with modified and creation date
+    Shortcut properties
+    Template directories
+    Fix preview resizing (undocked it wants to move to be its original right edge location)
+    Fix caching status updates (revert back to original status)
+    Add support for shortcut/symlink naming
+    Add setting to exclude paths for indexing
+    Add auto renaming
+    Add renaming based on content
+    Add folder syncing
+    Add maximising for undocked windows
+    Add parse time alongside search time
+    Add include folders in search setting
+    Add option when opening a new tab to change to it
+    symbolic links
+    Make changelog's per version
+    Add description of copy types to documentation + new names
+DONE    Add temp folder purging
+    Make settings dialog non blocking?
+    Add date created column?
+    Add collapse/expand level hotkeys
+    Add collapse/expand all hotkey
+    Make operation dialogs non blocking
+    Add operations progress window for longer processes
+    Add all operations to a thread
+    Make tabs undockable
+    Make settings files into 1 file
+    Add images to documentation
+    Make tabs start with current dir as name
+    Upgrade documentation, add links to docs in changelog where necessary
+    Add a "Task Manager" for flashfinder showing things like the indexer status, app usage, etc
+    Change status to app status rather then indexer status
+    Statistics
+    Add reload tabs on open setting
+    Add more error messages (move, paste, etc) to capture things like file in use
+    Make undo per tab
+    Add windows shortcuts (move window, etc)
+DONE ISH    Add ability to remotely terminate FlashFinder for other users (Process manager?)
+    Add print command to context menu
+    Taskbar loading bar
+    Ability to change view types (dual pane, etc)
+    Open With (Consigno?)
+    Process Manager (Admin Controls)
+    Logging
+    Filtering
+    Macro Commands
+    Add 3d model viewing support, add support for excel, add support to preview folder structure, videos, etc
+    Audio File preview?
+    Pinned item icons
+    Polish the GUI
+    File sharing
+    Notifications
+    File Conversion Operations
+    Properties window enhancements (attributes, previous versions, etc)
+    Fix search results header (end area)
+    Quick references (shortcuts, engineering related?) (add to settings?)
+    File Versioning
+    Color coding / Tagging
+    Smart Tagging (Tagging based on content)
+    Text File Comparison
+    Batch Operations?
+    Virtual Folders
+    Integrated text editor / image editor
+    Customizable UI / Custom Themes
+    Integrated Terminal / IDE
+    Duplicate File Finder
+    File / Folder Locking
+    Customizable Shortcuts
+    Backup / Restore
+    History dropdown on back/forward buttons
+    Disk Usage Analyzer
+    File Content Searching
+    Redo
+    Navigate ZIP files
+    Directory Visualizer
+    Password Manager?
+    File hashing tool?
+    Cross Device File Transfer
+    Integrated Note Taking
+    QR Code Generator
+    Look at more advanced clipboard?
+    On hover file details
+    Multidimensional sorting (multiple sort filters)
+    Custom file icons (user customizable as well)
+    Location based customizations?
+    Smart folders
+    Commenting / Notes for files and folders
+    Conversion tools
+    Tooltips
+    System cleanup tool
+    Network activity?
+    Workflow automation (Think IFTTT style where an action can trigger a series of automated actions)
+    Ephemeral File Sharing (Create temporary, self-destructing links for sharing files, enhancing security)
+    File relationship mapping
+    Workspaces
+    File analytics (how many times accessed, modification history, etc)
+    Automatic archiving / deleting after certain amount of time
+    System monitor (cpu, gpu, ram, etc)
+
+LONG TERM DEVELOPMENT FEATURES:
+    Update to PyQt6
+    Rework app, nicer code, optimize functions, use C++ extensions, etc
+    Machine learning
+    Collaborative features (Chat, shared folders, real time collaboration in files, etc)
+    BOM Viewer
+    Material Database / Component Library (goes along with reference material)
+    CAD tools (compare files, viewer, converter, etc)
+    PDM Integration
+    AI Assistant
+-->
+    <h1>Changelog</h1>
+
+    <h3>VERSION 7.5.3 (Bug Fixes)</h3>
+    <ol>
+        <li>Fixed bug in preview window.</li>
+        <p>Fixed bug where FlashFinder would crash due to trying to update the preview details bar when nothing is selected (including when preview isn't open). No longer trys to update when open and only works when a file is selected.</p>
+    
+        <li>Fixed a bug in preview window when moving files.</li>
+        <p>Fixed a bug where when a user moves a file while previewing it, FlashFinder would crash.</p>
+        
+        <li>Fixed a bug where tabs could be the same name.</li>
+        <p>Fixed a bug where tabs could have the same name causing interal referencing to fail when using the "Browse to in new tab" function.</p>
+
+        <li>Fixed a bug in the preview window cauing a crash if no file is selected.</li>
+        <p>Fixed a bug where if the preview was open and a file was not selected, FlashFinder would attempt to fetch file info casuing a crash.</p>
+    
+        <li>Fixed a bug where occasionally FlashFinder would crash after cancelling a search.</li>
+        <p>Fixed a bug where if a user cancelled a search, FlashFinder would occasionally fail to stop the previos thread and cause a memory race condition resulting in a crash.</p>
+    
+        <li>Added error handling for retrieving file owners.</li>
+        <p>Added error handling when FlashFinder cannot access file owner data, usually when user doesnt have necessary file permissions.</p>
+    
+        <li>Fixed a bug in the preview window when file owner has no domain.</li>
+        <p>Fixed a bug where if the file owner had no domain and the user is attempting to preview a file, FlashFinder would crash.</p>
+    
+        <li>Fixed bug where "Create Shortcut" would incorrectly name the shortcut.</li>
+        <p>Fixed bug where "Create Shortcut" would add " - Shortcut" after the file extension.</p>
+
+        <li>Fixed bug where file/folder naming allowed / \\ : * ? | &lt; &gt;.</li>
+        <p>Fixed bug where file and folder naming allowed unusable characters: / \\ : * ? | &lt; &gt;.</p>
+
+        <li>Fixed a bug where command searches using the type() command would work unpredictably.</li>
+        <p>Fixed bug where the type() command search would not properly remove the ".".</p>
+
+        <li>Tabs now open to the users desktop rather then the users profile.</li>
+        <p>New tabs will open to the users desktop path rather than their user profile path</p>
+
+        <li>Changed the Paste Duplicate dialog to support renaming files.</li>
+        <p>Changed the Past Duplicates dialog to support file renaming for files that have an existing same name.</p>
+
+        <li>Added the ability to "Replace All" when pasting multiple files with an existing same name.</li>
+        <p>Added the option to replace all files with the same name when pasting to files/folders to a path.</p>
+
+        <li>New tabs can no longer be the same name.</li>
+        <p>New tabs can no longer be the same name, tabs will now increment properly the number of tabs rather than incrementing off startup.</p>
+    
+        <li>Added the ability to update without requiring user interaction.</li>
+        <p>FlashFinder can now be updated remotely for all users rather than requiring all users to close the program. (FlashFinder will close automatically when updated and present the user an update message)</p>
+    
+        <li>Adjusted title bar buttons to closer resemble the Windows standard.</li>
+        <p>Adjusted FlashFinder styling to better suit Windows.</p>
+    </ol>
+
+    <h3>VERSION 7.5.2 (Hotfix)</h3>
+    <ol>
+        <li>Fixed "Type" search command.</li>
+        <p>Fixed "Type" search command when not prefixing the file extension with ".".</p>
+
+        <li>Added "Main Tab Behaviour" setting.</li>
+        <p>Added a "Main Tab Behaviour" setting to the general tab that sets whether the main tab will reload the last session.</p>
+    
+        <li>Fixed search speed when using subfolder searching.</li>
+        <p>Fixed the search speed when searching the "Current Path" and the "Include Subfolders" search setting checked.</p>
+
+        <li>Added the ability to remove nested pins.</li>
+        <p>Added support for removing nested pins rather than having to drag it to top level before removing.</p>
+
+        <li>Greatly increased pdf preview quality and performance.</li>
+        <p>Performance in the preview window has been greatly increased when viewing pdf files.</p>
+
+        <li>General preview window performance improvements</li>
+        <p>Improved overall performance of the preview window.</p>
+
+        <li>Added support for repathing pinned items.</li>
+        <p>Users can now remap pinned paths.</p>
+
+        <li>Added support for renaming pins</li>
+        <p>Users can now rename their pinned paths.</p>
+
+        <li>Added a details bar to the preview window.</li>
+        <p>Added a details bar that will show file info in the preview window</p>
+
+        <li>Thickened search progress bar.</li>
+        <p>Thickened the search progress bar for better contrast.</p>
+    </ol>
+
+    <h3>VERSION 7.5.1 (Hotfix)</h3>
+    <ol>
+        <li>Fixed search results from showing doubled extensions</li>
+        <p>Fixed the search reuslts from showing doubled file extesnions (Visual Bug Only).</p>
+
+        <li>Fixed "Copy Name" hotkey command.</li>
+        <p>The "Copy Name" hotkey would cause a crash due to incorrect data types (Internal).</p>
+
+        <li>Fixed "Copy Path" hotkey command.</li>
+        <p>The "Copy Path" hotkey would only copy the drive letter rather than the full path.</p>
+
+        <li>Added cloud storage support.</li>
+        <p>FlashFinder now supports OneDrive links.</p>
+
+        <li>Removed profiling code used for profiling the search.</li>
+        <p>Cleaned up profiling logic used when reworking the FlashFinder search.</p>
+
+        <li>Fixed a bug when scrolling on image in preview window.</li>
+        <p>When scrolling (changing page) on and image (which doesnt have pages) causes FlashFinder to crash.</p>
+
+        <li>Fixed a bug in pdf previews when changing pdfs.</li>
+        <p>When viewing a pdf larger then the next pdf that you try to preview, FlashFinder will crash due to trying to maintain the page in the next pdf.</p>
+    
+        <li>Added better error handling to preview window.</li>
+        <p>Added better error handling to the preview window to increase stability.</p>
+
+        <li>Fixed bug when trashing a folder.</li>
+        <p>Fixed bug when trying to trash a folder which will always throw the "Permission Error: is being used by another process".</p>
+
+        <li>Fixed bug in the index cache.</li>
+        <p>Fixed a bug where the index cache may not properly load on startup.</p>
+
+        <li>Changed the search results "Type" column.</li>
+        <p>Changed the search results "Type" column to better match the main view</p>
+
+        <li>Properties window times changed to 12H.</li>
+        <p>Changed the properties window time format from 24H to 12H.</p>
+
+        <li>Added cache refreshing.</li>
+        <p>Added cache refreshing which will keep the cache up to date.</p>
+
+        <li>Added "Ctrl + T" shortcut.</li>
+        <p>Added the "Ctrl + T" shortcut for creating new tabs.</p>
+    </ol>
+
+    <h3>VERSION 7.5</h3>
+    <ol>
+        <li>Added scrolling to search result in "Browse To" command.</li>
+        <p>The "Browse To" command when right clicking a search result now will scroll to the item.</p>
+    
+        <li>Fixed the hotkey move function.</li>
+        <p>Resolved a bug in the hotkey move function causing a crash.</p>
+
+        <li>Fixed breadcrumb file drops.</li>
+        <p>Fixed a bug where files would properly move to the dropped directory.</p>
+
+        <li>Fixed the size calculation from the old "MiB" to the new "MB" calculation.</li>
+        <p>"MiB" is a binary unit whereas "MB" is a decimal unit therefore 1MB is equal to 1000 bytes not 1024 bytes.</p>
+
+        <li>Added the option to replace a file or rename the file if it is a duplicate.</li>
+        <p>If a pasted file has the same name, the user can now decide in the general settings whether they would like to replace the existing file or rename it.</p>
+
+        <li>Added more copy commands to the main view's context menu.</li>
+        <p>Added a "More Copy Commands..." action to the main view's context menu allowing for many useful copying commands.</p>
+
+        <li>Added the ability to disable scrolling to on clicking a search result. Disabled by default now.</li>
+        <p>Users can now disable scrolling to the item in the main view when a search result is clicked (in case you dont want to lose your place).</p>
+
+        <li>Revised some hotkeys to a more familiar format.</li>
+        <p>Hotkeys have been changed to be more familiar for windows users.</p>
+    
+        <li>Changed the number format to use comma separators.</li>
+        <p>Larger numbers will now have comma separation for easier readability.</p>
+
+        <li>Added a "Browse in New Tab" command to search results context menu.</li>
+        <p>"Browse in New Tab" will open the file and select it in a new tab.</p>
+
+        <li>Fixed a bug in the "Browse To" command in search result context menu.</li>
+        <p>Fixed a bug causing the "Browse To" command to not function as expected.</p>
+
+        <li>The "type()" search command now supports using the "." or not.</li>
+        <p>Users can now search "type(.pdf)" or "type(pdf)" rather than requiring the ".".</p>
+
+        <li>Added cached searching. Enabled by default.</li>
+        <p>Cached searching can now be enabled or disabled in the search settings.</p>
+
+        <li>Optimized searching.</li>
+        <p>The search has received a massive overall boasting ~265% faster using uncached searches and ~1065% faster using cached searches.</p>
+
+        <li>Users can now directly open a file from the address bar if given a file path.</li>
+        <p>If given a full file path, FlashFinder will launch the file in its default app.</p>
+
+        <li>Added edge and corner snapping when dragging the title bar near the edge or corner of the screen.</li>
+        <p>FlashFinder will now snap when dragged with the cursor near the edge/corner of the screen.</p>
+
+        <li>Fixed a bug when removing pinned items.</li>
+        <p>Fixed a bug where pins would remove but would reappear after relaunching FlashFinder.</p>
+    
+        <li>Undo now restores files that were sent to the trash.</li>
+        <p>The undo command can now restore trashed files.</p>
+
+        <li>Added the option to paste or move externally dropped files.</li>
+        <p>Users can now decide whether files will paste or move files to the loction flash finder drops to externally.</p>
+    </ol>
+    
+    <h3>VERSION 7.4.1 (Hotfix)</h3>
+    <ol>
+        <li>Fixed loading and saving settings.</li>
+        <p>Fixed bug with the settings files introduced when adding the general settings. App would reference {COMPUTERNAME}_settings.json rather then user specific settings.</p>
+    
+        <li>Fixed bug where comparing files would cause an internal error and crash the program.</li>
+        <p>Fixed a bug where comparing files would try to update the progress however gave the wrong data thus causing a crash.</p>
+    
+        <li>Fixed bug where navigation buttons wouldnt work after renaming a tab.</li>
+        <p>Addressed an issue where the navigation buttons would remain attached to the old tab name after renaming the tab thus causing the buttons to not work properly.</p>
+    </ol>
+    
+    <h3>VERSION 7.4</h3>
+    <ol>
+        <li>Improved light themed styling scheme.</li>
+        <p>Enhanced the light theme's appearance to better resemble the dark themed color scheme.</p>
+    
+        <li>Added tabbed browsing.</li>
+        <p>Introduced a tabbed interface, enabling users to open and work across multiple directories simultaneously for a more efficient file management experience.</p>
+        
+        <li>Fixed bug where pasting folders would cause an internal error.</li>
+        <p>Resolved an issue where pasting folders without file extensions triggered errors.</p>
+        
+        <li>Fixed bug where the context menu "Compare" command wouldn't show for capitalized extensions.</li>
+        <p>Corrected the context menu to display the "Compare" command for files with capitalized extensions, ensuring consistent functionality.</p>
+    
+        <li>Fixed bug in power rename causing enumeration to be doubled.</li>
+        <p>Addressed a bug in Power Rename where enumerated file names were incorrectly duplicated, aligning the actual renamed files with the previewed names.</p>
+    
+        <li>Added error handling to power rename.</li>
+        <p>Enhanced Power Rename with error handling capabilities to cope with issues like permission errors, improving the tool's reliability.</p>
+    
+        <li>Fixed bug where if the current path gets too long ("..." button appears), the breadcrumbs become unusable.</li>
+        <p>Addressed and issue where if the current path/address gets too long and breadcrumb buttons begin to fall of (when the "..." button appears), the bar gets repeatedly updated despite no path changes making the breadcrumb buttons not function as intended.</p>
+    
+        <li>Search now only return results from the users active drives.</li>
+        <p>Using the search will now only show results from the users active mounted drives rather than all indexes present, increasing search accuracy.</p>
+
+        <li>Fixed bug with receiving external drops in the tabs.</li>
+        <p>Addressed a bug with the tabs where they would accept external (outside of FlashFinder) files in the main tab regardless of where it was dropped.</p>
+    
+        <li>Added per tab browing history.</li>
+        <p>The forward and back buttons now work per tab rather than saving directories across tabs, enhancing functionality.</p>
+
+        <li>Fixed a bug where the preview wouldn't scroll to the next page.</li>
+        <p>Addressed a bug in the preview where it wouldn't load the pages properly aside from the intial page loading.</p>
+
+        <li>Changed the progress bar to have a moving affect when loading to indicate a search has started.</li>
+        <p>The progress bar now moves to give better visual indication of a search starting, pressing enter while a search is processing restarts the search with the new query.</p>
+    
+        <li>Fixed a bug where folders in the search result would show an extension.</li>
+        <p>Fixed a bug in the search resultes where folders would be suffixed with the extension ".Folder", visual bug only.</p>
+
+        <li>Added file attaching to the suggestion box.</li>
+        <p>Users can now attach files with their suggestions / bug reports for better communication with the developer.</p>
+
+        <li>Added renaming to the tabs.</li>
+        <p>Users can rename their tabs for better prodcutivity.</p>
+
+        <li>Added tab saving.</li>
+        <p>Tabs will save before closing to leave the user in the places they left off.</p>
+
+        <li>Added general app settings.</li>
+        <p>Added a new "General" tab to the settings menu for some general app settings.</p>
+
+        <li>Changed the expanding arrows to be visible in both the dark and light modes.</li>
+        <p>Changed the expanding arrows to be a neutral contrast enhancing visibilty in the dark mode.</p>
+
+        <li>Added the ability to move files between tabs.</li>
+        <p>Tabs can now be moved between tabs by hovering over the tab with a file.</p>
+
+        <li>Fixed dropping in same directory triggering permission error.</li>
+        <p>Fixed a problem where dropping in the same folder would cause a permission error when the user is essentially not doing anything.</p>
+
+        <li>Tabs now increment rather than requiring a name right away.</li>
+        <p>To decrease the time to create a new tab, the tabs simply start with a incremented name to be renamed at the users convienece.</p>
+    </ol>
+    
+    <h3>VERSION 7.3.1 (Hotfix)</h3>
+    <ol>
+        <li>Fixed bug where indexer couldn't complete its cleanup on close.</li>
+        <p>Eliminated a bug that prevented the indexer from properly cleaning up upon application closure, ensuring better performance and stability.</p>
+        
+        <li>Fixed bug where pasting a folder with the same name would cause an internal error.</li>
+        <p>Rectified an error that occurred when a folder with an existing name was pasted due to no file extension when prompting for rename.</p>
+        
+        <li>Fixed bug where search results show double extensions.</li>
+        <p>Corrected a visual bug in search results that showed files with double extensions, refining the presentation for accurate file identification.</p>
+        
+        <li>Fixed bug where the context menu wasn't working as expected in the search results list.</li>
+        <p>Resolved an issue with the context menu in the search results list, ensuring all file operation commands are accessible for the proper search result.</p>
+    
+        <li>Added paste shortcut.</li>
+        <p>Users can now create shortcuts directly through the context menu when used with the "Copy Path" command, streamlining the process of linking to frequently accessed files or directories.</p>
+    
+        <li>Added keyboard shortcut documentation.</li>
+        <p>Provided a comprehensive guide to FlashFinder's keyboard shortcuts, enhancing user productivity through quick command references.</p>
+    
+        <li>Fixed preview window so zooming is to the cursor.</li>
+        <p>Improved the preview window's zoom feature to center on the user's cursor, allowing for more precise and intuitive navigation within files.</p>
+    </ol>
+
+    <h3>VERSION 7.3</h3>
+    <ol>
+        <li>Compress / Extract</li>
+        <p>Capabilities to compress files or folders and to extract content from compressed archives.</p>
+                
+        <li>Undo functionality</li>
+        <p>Feature allowing users to revert their last action, enhancing usability and error recovery.</p>
+        
+        <li>Fixed bug where compare wasn't scaling pages</li>
+        <p>Addressed an issue where the comparison tool didn't correctly scale pages, ensuring accurate comparisons.</p>
+        
+        <li>Fixed bug where "copy", "move", and "delete" commands weren't being shown in the context menu</li>
+        <p>Resolved an inconsistency where certain file operation commands were missing from the context menu.</p>
+        
+        <li>Fixed bug where you couldn't remove pinned shortcuts</li>
+        <p>Rectified an issue preventing users from removing or unpinning shortcuts.</p>
+        
+        <li>Fixed bug where versioning within the app wasn't updating</li>
+        <p>Addressed an issue where the internal app version displayed remained outdated or incorrect.</p>
+        
+        <li>Fixed bug where preview wouldn't load on initial click</li>
+        <p>Resolved a bug where file previews didn't immediately display upon the user's initial selection.</p>
+        
+        <li>Added Help page / Documentation / Changelog</li>
+        <p>Introduced a dedicated section providing user assistance, detailed documentation, and a record of software changes.</p>
+        
+        <li>Added Suggestion Box / Report a bug</li>
+        <p>Integrated features for users to suggest improvements or report software issues, enhancing feedback and development.</p>
+        
+        <li>Added ability to rebuild indexes</li>
+        <p>Provided a tool to manually trigger a rebuild of file indexes, optimizing search performance.</p>
+        
+        <li>Adjusted reindexing intervals</li>
+        <p>Refined the frequency of automatic index rebuilds to improve performance and search accuracy.</p>
+        
+        <li>Fixed bug where pausing would occur on indexer status updates</li>
+        <p>Addressed an issue causing interruptions or pauses during indexer status updates.</p>
+        
+        <li>Change drag and drop from paste to move</li>
+        <p>Modified the drag-and-drop functionality to default to moving files instead of pasting, enhancing user experience.</p>
+        
+        <li>Breadcrumb navigation</li>
+        <p>Implemented a navigation feature showing the user's path through the file system, allowing for quick jumps between directories.</p>
+        
+        <li>Rebuild index</li>
+        <p>A feature to manually trigger a rebuild of the application's file index, ensuring up-to-date search results.</p>
+        
+        <li>Rearrangable pinned items + nesting</li>
+        <p>Added the ability for users to rearrange their pinned items and also allows for nesting items to enhance accessibility.</p>
+
+        <li>Add splash screen</li>
+        <p>Added a splash screen to provide visual feedback upon launching FlashFinder</p>
+
+        <li>Changed "Default path" setting's path</li>
+        <p>Changed the comparison tool's "Default Path" setting to the users "Documents" folder rather than the executables location</p>
+
+        <li>Fixed search to add extensions</li>
+        <p>Search wasn't working properly and would return no results if "example.pdf" was searched instead of "example"</p>
+
+        <li>Resizable settings window</li>
+        <p>Make the settings window resizable allowing for easier viewing of the documentation pages</p>
+    </ol>
+
+    <h3>VERSION 7.2</h3>
+    <ol>
+        <li>Optimize opening speed</li>
+        <p>Improvements to the application's launch speed, ensuring faster access for users.</p>
+        
+        <li>Version indication (About)</li>
+        <p>A feature in the "About" section that clearly displays the current version of the software.</p>
+        
+        <li>Power Rename</li>
+        <p>An advanced renaming tool that offers more flexibility and options compared to standard renaming.</p>
+        
+        <li>What's using this file</li>
+        <p>A utility to determine which processes or programs are currently accessing a particular file.</p>
+    </ol>
+
+    <h3>VERSION 7.1</h3>
+    <ol>
+        <li>Make Shortcut</li>
+        <p>Functionality to create a shortcut for the application, enhancing user accessibility.</p>
+        
+        <li>Change size format from "KiB", "MiB", "GiB", etc to "KB", "MB", "GB", etc</li>
+        <p>Adjusting the format of displayed file sizes to a more common and familiar notation.</p>
+        
+        <li>New app name</li>
+        <p>The software has been renamed to migrate away from Windows File Explorer.</p>
+        
+        <li>Advanced searching enhancements (any and all)</li>
+        <p>Improvements to the advanced search feature, providing more versatile search criteria with "any" and "all" conditions.</p>
+        
+        <li>Copy Name</li>
+        <p>Feature to quickly copy the name of a file or folder to the clipboard.</p>
+        
+        <li>Furthered Advanced Searching (Any, All)</li>
+        <p>Extended capabilities in advanced search, emphasizing the use of multiple conditions.</p>
+        
+        <li>Fixed PDF Compare</li>
+        <p>Resolved issues related to comparing PDF files within the application.</p>
+    </ol>
+
+    <h3>VERSION 7 (Primary Release Start)</h3>
+    <ol>
+        <li>Pin to taskbar</li>
+        <p>Allows users to pin the application to the taskbar for quick and easy access.</p>
+    
+        <li>Settings window</li>
+        <p>Introduces a dedicated window for users to configure and customize various application settings, including those for comparison and search.</p>
+    
+        <li>Indexing includes data</li>
+        <p>Enhances the indexing process to capture more detailed file data such as path, name, size, etc.</p>
+    
+        <li>Search History</li>
+        <p>Provides a log or history of past searches, allowing users to revisit previous search terms and results.</p>
+    
+        <li>Easier advanced searching</li>
+        <p>Simplifies the interface and process for advanced search queries, supporting multiple conditions like "contains," "equals," and type-specific searches.</p>
+    
+        <li>Enhanced Preview</li>
+        <p>Improves the file preview feature, allowing for scrolling through pdf pages, viewing more of text based files, and introducing zooming and panning capabilities.</p>
+    
+        <li>Fixed indexing "running" updates</li>
+        <p>Addresses an issue where indexer updates would be shown from multiple users.</p>
+    
+        <li>Fixed maximize and minimize icons</li>
+        <p>Resolves issues related to the appearance and functionality of the window management icons.</p>
+    </ol>
+
+    <h3>VERSION 4 - 6 (Beta Versions)</h3>
+    <ol>
+        <li>Add search status bar</li>
+        <p>A new bar that displays the progress or status of ongoing searches, enhancing user feedback.</p>
+        
+        <li>Add keyboard shortcuts</li>
+        <p>Integration of shortcut keys to facilitate quicker operations and enhance usability.</p>
+        
+        <li>Add regex searching capabilities</li>
+        <p>Advanced search feature allowing for pattern-based searches using regular expressions.</p>
+        
+        <li>Add icons for SolidWorks files</li>
+        <p>Specialized icons introduced for files related to the SolidWorks software, improving file type identification.</p>
+        
+        <li>Change PDM folders to be green similar to default PDM</li>
+        <p>Adjusting the color scheme of PDM folders to align with the standard PDM aesthetic.</p>
+        
+        <li>Add date modified column to main view</li>
+        <p>A new column in the display showing the last modification date for each file, aiding in file management.</p>
+        
+        <li>Add "Up Directory" button</li>
+        <p>A button to quickly navigate one directory level up, improving navigation efficiency.</p>
+        
+        <li>Move indexer to separate process</li>
+        <p>Decoupling the indexing operation from the main application to improve performance and responsiveness.</p>
+        
+        <li>"First come first serve" indexing</li>
+        <p>A collaborative indexing approach where all users contribute equally, balancing CPU usage across multiple users.</p>
+        
+        <li>Add search progress bar</li>
+        <p>A visual bar indicating the ongoing progress of searches, offering clearer user feedback.</p>
+        
+        <li>Maximize on title bar double click</li>
+        <p>Intuitive window management feature allowing users to maximize the application window with a double-click on the title bar.</p>
+        
+        <li>Adjust maximize/minimize geometry and locations</li>
+        <p>Refining the placement and behavior of maximize and minimize buttons for better user experience.</p>
+        
+        <li>Bug fixes (Search and indexer)</li>
+        <p>Addressing and resolving known bugs related to the search and indexing functionalities.</p>
+        
+        <li>Fixed pinned items to be per device</li>
+        <p>Ensuring pinned items are specific to each device, allowing for personalized user experiences across devices.</p>
+        
+        <li>Fixed indexing so it no longer creates indexes for drives that don't exist</li>
+        <p>Rectifying an issue where unnecessary indexes were created for non-existent drives.</p>
+    </ol>
+
+    <h3>VERSION 1 - 3 (Beta Versions)</h3>
+    <ol>
+        <li>Initial release</li>
+        <p>The maiden launch of the software with basic functionalities.</p>
+        
+        <li>Simple file search</li>
+        <p>A basic search feature, faster than Windows, focusing on substring matches.</p>
+        
+        <li>Simple file preview</li>
+        <p>Enables users to have a quick glance at file contents, albeit with some limitations.</p>
+        
+        <li>File Comparison</li>
+        <p>A feature to compare PDF files, though settings are not customizable in this version.</p>
+        
+        <li>Default functionality</li>
+        <p>Basic operations like copy, paste, etc., have been integrated.</p>
+        
+        <li>Quick access</li>
+        <p>Provides users with a shortcut or rapid method to access frequent files or tasks.</p>
+        
+        <li>Pinned quick links</li>
+        <p>Lets users pin their frequently visited links or files for easy accessibility.</p>
+        
+        <li>File indexer thread</li>
+        <p>A dedicated thread for indexing files, enhancing search performance.</p>
+        
+        <li>Sorting by headers</li>
+        <p>Organize displayed files based on selected headers (e.g., name, date).</p>
+        
+        <li>Current path or all paths search modes</li>
+        <p>Choose to search within the current directory or across all directories.</p>
+        
+        <li>Custom title bar</li>
+        <p>A redesigned title bar to give a unique look and feel to the application window.</p>
+        
+        <li>Read/Write access button</li>
+        <p>Toggle button to switch between read-only and write modes.</p>
+        
+        <li>Add indexing status bar</li>
+        <p>A bar to show the status of the file indexing process and number of files indexed.</p>
+        
+        <li>Bug fixes (Search and indexer)</li>
+        <p>Resolved known issues related to the search feature and indexer.</p>
+    </ol>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Searching with FlashFinder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            font-size: 12px;
+        }
+        h1, h2, h3 {
+            color: #0078D4;
+        }
+        p, li {
+            margin-bottom: 15px;
+        }
+        a {
+            color: #0078D4;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Advanced Searching with FlashFinder</h1>
+
+<p><a href="docs\\main_menu.html">Back to Main Menu</a></p>
+
+<p>FlashFinder provides a powerful mechanism for file search, catering to generic string searches, regex searches, and command searches. This guide will delve into the specifics of these search techniques and the settings you can customize.</p>
+
+<h2>General</h2>
+<p>FlashFinder supports searching all directories or you can search the current directory simply by toggling between the modes using the button to the right of the search bar.</p>
+
+<h2>Generic String Searches</h2>
+<p>For basic searches, simply enter the desired keyword or phrase. FlashFinder will search for files and directories containing the entered text.</p>
+
+<h2>Regex Searches</h2>
+<p>If you're familiar with regular expressions, FlashFinder allows for more advanced pattern-based searches. To initiate a regex search, start your search term with double colons [<em>::</em>]. For example, <em>::\d{4}</em> will search for any sequence of four digits in file names.</p>
+<p>See the <a href="docs\\regex.html">Regex</a> page for more information on regular expressions</p>
+
+<h2>Command Searches</h2>
+<p>Command searches in FlashFinder provide a way to refine your search criteria using specific commands:</p>
+<ul>
+    <li><strong>contains</strong> and <strong>!contain</strong>: Check if a filename contains or does not contain specific terms.</li>
+    <li><strong>equals</strong> and <strong>!equal</strong>: Exact matches or exclusions based on specific terms.</li>
+    <li><strong>type</strong> and <strong>!type</strong>: Filter or exclude files based on their types or extensions.</li>
+</ul>
+<p>The suffixes for the commands <strong>:all</strong> and <strong>:any</strong>: alter the way the commands use the terms.</p>
+<p>Examples:</p>
+<ul>
+    <li>Find files containing "apple" <strong>AND</strong> "recipe": <em>contains(apple, recipe)</em>, <em>contains<em>:</em>all(apple, recipe)</em></li>
+    <li>Find files containing "apple" <strong>OR</strong> "recipe": <em>contains<em>:</em>any(apple, recipe)</em></li>
+</ul>
+<p>Command searches can also be used in combination with other commands. You can also use as many terms in the commands as youd like.</p>
+<p>Examples:</p>
+<ul>    
+    <li>Find files that contain "resume" and are a PDF: <em>contains(resume)</em>, <em>type(pdf)</em></li>
+    <li>Find files that contains "business", "finance", "engineering", "art", or "science": <em>equals<em>:</em>any(business, finance, engineering, art, science)</em></li>
+</ul>
+
+<h2>Search Settings</h2>
+<p>FlashFinder offers customization of the search process through its settings (found in the "search" tab in the settings window):</p>
+
+<h3>Include Subfolders</h3>
+<p>By default, FlashFinder includes subfolders in search results. If you wish to exclude subfolders, uncheck the "Include subfolders in search results" option in the settings.</p>
+
+<h3>Indexed Search</h3>
+<p>To accelerate the search process, FlashFinder can use indexed data. This can make searches faster, but the results might not be the most up-to-date. Toggle the "Use indexes when searching" option in the settings to enable or disable this feature.</p>
+
+<h3>Cached Search</h3>
+<p>To further speed up the search process, FlashFinder will cache the index data into memory resulting in significantly faster search times but much greater memory usage (~750MB/1,000,000 indexed files). </p>
+
+<p><a href="docs\\main_menu.html">Back to Main Menu</a></p>
+
+</body>
+</html>
