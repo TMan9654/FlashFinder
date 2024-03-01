@@ -1,4 +1,5 @@
 
+from fitz import open as fopen
 from PySide6.QtCore import QByteArray, QEvent, Qt
 from PySide6.QtGui import QPainter, QPixmap
 from PySide6.QtSvg import QSvgRenderer
@@ -59,10 +60,9 @@ class PreviewWindow(QGraphicsView):
         self.explorer.update_details_bar()
 
     def _load_pdf(self, file_path: str):
-        import fitz
 
         try:
-            with fitz.open(file_path) as pdf_document:
+            with fopen(file_path) as pdf_document:
                 self.page_count = pdf_document.page_count
                 if self.current_page >= self.page_count:
                     self.current_page = 0
@@ -97,7 +97,7 @@ class PreviewWindow(QGraphicsView):
 
     def _adjust_view(self):
         self.setSceneRect(self.preview_scene.itemsBoundingRect())
-        self.fitInView(self.preview_scene.itemsBoundingRect(), Qt.KeepAspectRatio)
+        self.fitInView(self.preview_scene.itemsBoundingRect(), Qt.AspectRatioMode.KeepAspectRatio)
         self.scale(self.zoom_level, self.zoom_level)
 
     def wheelEvent(self, event: QEvent):

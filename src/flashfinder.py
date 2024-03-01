@@ -1,5 +1,6 @@
 
-from .config.config import BASE_PATH, INDEXES_PATH, ICONS_PATH, SETTINGS_PATH, TEMP_PATH, VERSION, IS_DARK, COMPUTERNAME
+from .config.config import BASE_PATH, INDEXES_PATH, ICONS_PATH, SETTINGS_PATH, TEMP_PATH, VERSION, \
+    IS_DARK, COMPUTERNAME, DESKTOP_PATH, DOCUMENTS_PATH, PICTURES_PATH
 
 from .core.status_check_thread import StatusCheckThread
 from .core.file_process_thread import FileProcessThread
@@ -23,19 +24,21 @@ from .gui.settings_dialogs.settings import SettingsDialog
 
 from .models.file_system_model import FileSystemModel
 
+from collections import OrderedDict
 from send2trash import send2trash
 from pythoncom import CoCreateInstance, CLSCTX_INPROC_SERVER, IID_IPersistFile
 from win32com.shell import shell, shellcon
 from win32api import GetLogicalDriveStrings
 from win32file import GetDriveType, DRIVE_REMOTE
-from os import path, getpid, environ, remove, walk, startfile, makedirs, listdir, rename, mkdir, rmdir
+from os import path, getpid, remove, walk, startfile, makedirs, listdir, rename, mkdir, rmdir
 from subprocess import Popen
 from json import load, dump
 from zipfile import ZipFile
 from ctypes import wintypes
+from time import time
 from shutil import move, copytree, copy2
 from win32security import GetFileSecurity, OWNER_SECURITY_INFORMATION, LookupAccountSid
-from PySide6.QtCore import Qt, QTimer, QItemSelectionModel, Signal, QMimeData, QUrl, QPoint, QFileInfo, QSize
+from PySide6.QtCore import Qt, QTimer, QItemSelectionModel, QMimeData, QUrl, QPoint, QFileInfo, QSize
 from PySide6.QtGui import QResizeEvent, QKeySequence, QIcon, QPixmap, QGuiApplication, QCursor, QAction, QShortcut
 from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QLabel, QPushButton, QMessageBox, QTreeWidget, \
     QTreeWidgetItem, QHeaderView, QFileDialog, QMenu, QSplitter, QAbstractItemView, QFileIconProvider, QProgressBar, \
@@ -47,10 +50,10 @@ class FlashFinder(QMainWindow):
     def __init__(self, parent):
         super().__init__()
         self.setMaximumSize(QGuiApplication.primaryScreen().availableSize())
-        self.current_path = path.normpath(environ["USERPROFILE"])
+        self.current_path = DESKTOP_PATH
         self.browser_history = {"Main": []}
         self.browser_forward_history = {"Main": []}
-        self.search_history = []
+        self.search_history = OrderedDict()
         self.undo_history = []
         self.redo_history = []
         self.copied_path_item = ()
@@ -75,6 +78,7 @@ class FlashFinder(QMainWindow):
         self.initUI()
         self.load_pinned_items()
         self.load_tabs()
+        self.load_search_history()
 
     def initUI(self):
         self.setWindowTitle(f"FlashFinder {VERSION.split('.')[0]} by TerrinTech")
@@ -98,9 +102,8 @@ class FlashFinder(QMainWindow):
 
         self.main_view = TreeView(self)
         self.main_view.setModel(self.model)
-        self.main_view.setRootIndex(self.model.index(path.join(environ["USERPROFILE"], "Desktop")))
-        self.main_view.header().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
-        self.main_view.setColumnWidth(0, 400)
+        self.main_view.setRootIndex(self.model.index(DESKTOP_PATH))
+        self.main_view.header().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.main_view.setSortingEnabled(True)
         self.main_view.sortByColumn(0, Qt.SortOrder.AscendingOrder)
         self.main_view.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
@@ -170,7 +173,7 @@ class FlashFinder(QMainWindow):
         self.search_results_tree.setSortingEnabled(True)
         self.search_results_tree.setRootIsDecorated(False)
         self.search_results_tree.sortByColumn(2, Qt.SortOrder.AscendingOrder)
-        self.search_results_tree.header().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        self.search_results_tree.header().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.search_results_tree.header().setStretchLastSection(False)
         self.search_results_tree.itemClicked.connect(self.on_search_result_item_clicked)
         self.search_results_tree.itemDoubleClicked.connect(self.on_search_result_item_double_clicked)
@@ -418,7 +421,7 @@ class FlashFinder(QMainWindow):
         else:
             label = "Main"
         new_view = self.create_new_view(root_path=file_path) if label != "Main" else self.create_new_view(main_view=True)
-        self.browser_history[label] = [file_path if label != "Main" else path.join(environ["USERPROFILE"], "Desktop")]
+        self.browser_history[label] = [file_path if label != "Main" else DESKTOP_PATH]
         self.browser_forward_history[label] = []
         if label != "Main":
             self.active_shortcuts(current_view=new_view)
@@ -669,7 +672,7 @@ class FlashFinder(QMainWindow):
         self.save_tabs()
         if path.exists(path.join(INDEXES_PATH, f"{COMPUTERNAME}_is_alive")):
             remove(path.join(INDEXES_PATH, f"{COMPUTERNAME}_is_alive"))
-        # self.purge_temp_folder()
+        self.purge_temp_folder()
 
     def close_tab(self, index):
         widget_to_remove = self.tab_widget.widget(index)
@@ -942,7 +945,7 @@ class FlashFinder(QMainWindow):
         new_view = TreeView(self)
         new_view.setModel(self.model)
         if not root_path:
-            new_view.setRootIndex(self.model.index(path.join(environ["USERPROFILE"], "Desktop")))
+            new_view.setRootIndex(self.model.index(DESKTOP_PATH))
         else:
             new_view.setRootIndex(self.model.index(root_path))
         new_view.header().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
@@ -1178,6 +1181,36 @@ class FlashFinder(QMainWindow):
 
         return general_settings
 
+    def load_search_history(self):
+        if path.exists(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_search_history.json")):
+            with open(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_search_history.json"), "r") as file:
+                self.search_history = load(file)
+                self.remove_old_search_history()
+                self.search_bar.addItems(self.search_history.keys())
+            
+    def load_search_settings(self):
+        if path.exists(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_search-settings.json")):
+            with open(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_search-settings.json"), "r") as f:
+                search_settings = load(f)
+        else:
+            search_settings = {
+                "INDEXED_SEARCH": True,
+                "EXCLUDE_PATHS": [
+                    "$Recycle.Bin",
+                    "$RECYCLE.BIN",
+                    "System Volume Information",
+                    "Windows",
+                    "Program Files",
+                    "Program Files (x86)",
+                    "ProgramData",
+                    "Recovery"
+                ],
+                "INCLUDE_SUBFOLDERS": False,
+                "CACHED_SEARCH": True,
+                "HISTORY_LIFETIME": 259200 # 3 days
+            }
+        return search_settings
+        
     def load_tabs(self):
         try:
             with open(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_tabs.json"), "r") as file:
@@ -1307,7 +1340,7 @@ class FlashFinder(QMainWindow):
     def onFoundMatchingFile(self, matches: dict):
         self.search_results_tree.clear()
         for file_path in matches.keys():
-            name, file_type, creation_date, modification_date = matches[path]
+            name, file_type, creation_date, modification_date = matches[file_path]
             item = QTreeWidgetItem([name, file_type, file_path, creation_date, modification_date])
             item.setData(0, Qt.ItemDataRole.UserRole, file_path)
             self.search_results_tree.addTopLevelItem(item)
@@ -1472,10 +1505,10 @@ class FlashFinder(QMainWindow):
 
     def populate_quick_access(self):
         file_paths = {
-            "Desktop": path.expanduser("~\\Desktop"),
-            "Documents": path.expanduser("~\\Documents"),
+            "Desktop": DESKTOP_PATH,
+            "Documents": DOCUMENTS_PATH,
             "Downloads": path.expanduser("~\\Downloads"),
-            "Pictures": path.expanduser("~\\Pictures"),
+            "Pictures": PICTURES_PATH,
             "Videos": path.expanduser("~\\Videos")
         }
         
@@ -1514,9 +1547,10 @@ class FlashFinder(QMainWindow):
             QMessageBox.information(self, "Permission Error", "You don't have the required permissions.")
 
     def purge_temp_folder(self):
-        for file in listdir(TEMP_PATH):
-            file_path = path.join(TEMP_PATH, file)
-            remove(file_path)
+        if path.exists(TEMP_PATH):
+            for file in listdir(TEMP_PATH):
+                file_path = path.join(TEMP_PATH, file)
+                remove(file_path)
 
     def relink_pinned_item(self, item: QTreeWidgetItem):
         old_path = item.data(0, Qt.ItemDataRole.UserRole)
@@ -1530,6 +1564,12 @@ class FlashFinder(QMainWindow):
                 self.pinned_items[name] = new_path
 
             self.save_pinned_items()
+
+    def remove_old_search_history(self):
+        current_time = time()
+        for item, timestamp in list(self.search_history.items()):
+            if current_time - timestamp > self.load_search_settings().get("HISTORY_LIFETIME"):
+                del self.search_history[item]
 
     def remove_pinned_item(self, item: QTreeWidgetItem):
         file_path = item.data(0, Qt.ItemDataRole.UserRole)
@@ -1604,6 +1644,10 @@ class FlashFinder(QMainWindow):
         with open(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_pinned-items.json"), "w") as f:
             dump(items, f)
 
+    def save_search_history(self):
+        with open(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_search_history.json"), "w") as file:
+            dump(self.search_history, file)
+
     def save_tabs(self):
         tabs = {}
         for i in range(self.tab_widget.count()):
@@ -1642,7 +1686,7 @@ class FlashFinder(QMainWindow):
         else:
             QMessageBox.information(self, "File Usage", processes)
 
-    def show_properties(self, file_path:str):
+    def show_properties(self, file_path: str):
         self.properties_window = QWidget(self, Qt.WindowType.Window)
         self.properties_window.setObjectName("PropertiesWindow")
         layout = QVBoxLayout()
@@ -1652,14 +1696,38 @@ class FlashFinder(QMainWindow):
         owner = self.get_file_owner(file_path)
         file_icon_provider = QFileIconProvider()
 
-        file_icon = file_icon_provider.icon(file_info)
-        file_type = QLineEdit(file_info.suffix() if not file_info.isDir() else "Directory")
-        file_path = QLineEdit(file_info.absoluteFilePath())
-        file_size = QLineEdit(self.format_file_size(file_info.size()))
-        date_created = QLineEdit(file_info.birthTime().toString(Qt.DateFormat.SystemLocaleLongDate))
-        date_modified = QLineEdit(file_info.lastModified().toString(Qt.DateFormat.SystemLocaleLongDate))
-        date_accessed = QLineEdit(file_info.lastRead().toString(Qt.DateFormat.SystemLocaleLongDate))
-        file_owner = QLineEdit(owner)
+        try:
+            file_icon = file_icon_provider.icon(file_info)
+        except:
+            file_icon = QLineEdit("ERROR")
+        try:
+            file_type = QLineEdit(file_info.suffix() if not file_info.isDir() else "Directory")
+        except:
+            file_type = QLineEdit("ERROR")
+        try:
+            file_path_line = QLineEdit(file_info.absoluteFilePath())
+        except:
+            file_path_line = QLineEdit("ERROR")
+        try:
+            file_size = QLineEdit(self.format_file_size(file_info.size()))
+        except:
+            file_size = QLineEdit("ERROR")
+        try:
+            date_created = QLineEdit(file_info.birthTime().toString(Qt.DateFormat.SystemLocaleLongDate))
+        except:
+            date_created = QLineEdit("ERROR")
+        try:
+            date_modified = QLineEdit(file_info.lastModified().toString(Qt.DateFormat.SystemLocaleLongDate))
+        except:
+            date_modified = QLineEdit("ERROR")
+        try:
+            date_accessed = QLineEdit(file_info.lastRead().toString(Qt.DateFormat.SystemLocaleLongDate))
+        except:
+            date_accessed = QLineEdit("ERROR")
+        try:
+            file_owner = QLineEdit(owner)
+        except:
+            file_owner = QLineEdit("ERROR")
         
         file_type_label = QLabel("Type: ")
         file_path_label = QLabel("Location: ")
@@ -1669,12 +1737,14 @@ class FlashFinder(QMainWindow):
         date_accessed_label = QLabel("Date accessed: ")
         file_owner_label = QLabel("Owner: ")
         
-        for line_edit in [file_type, file_path, file_size, date_created, date_modified, date_accessed, file_owner]:
-            line_edit.setReadOnly(True)
-            line_edit.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        for line_edit in [file_type, file_path_line, file_size, date_created, date_modified, date_accessed, file_owner]:
+            if type(line_edit) is QLineEdit:
+                line_edit.setReadOnly(True)
+                line_edit.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+            
 
         form_layout.addRow(file_type_label, file_type)
-        form_layout.addRow(file_path_label, file_path)
+        form_layout.addRow(file_path_label, file_path_line)
         form_layout.addRow(file_size_label, file_size)
         form_layout.addRow(date_created_label, date_created)
         form_layout.addRow(date_modified_label, date_modified)
@@ -1682,7 +1752,7 @@ class FlashFinder(QMainWindow):
         form_layout.addRow(file_owner_label, file_owner)
         
         file_type.setObjectName("PropertiesLineEdit")
-        file_path.setObjectName("PropertiesLineEdit")
+        file_path_line.setObjectName("PropertiesLineEdit")
         file_size.setObjectName("PropertiesLineEdit")
         date_created.setObjectName("PropertiesLineEdit")
         date_modified.setObjectName("PropertiesLineEdit")
@@ -1788,12 +1858,13 @@ class FlashFinder(QMainWindow):
             self.search_progress_bar.setProperty("completed", False)
             self.search_progress_bar.setMaximum(0)
             self.search_progress_bar.style().polish(self.search_progress_bar)
-            if query and query not in self.search_history:
-                self.search_history.insert(0, query)
-            self.search_history = self.search_history[:10]
+            if query and query not in self.search_history.keys():
+                self.search_history[query] = time()
+                self.search_history.move_to_end(query, last=False)
+                self.save_search_history()
             self.search_bar.clear()
             self.search_bar.setCurrentText(query)
-            self.search_bar.addItems(self.search_history)
+            self.search_bar.addItems(self.search_history.keys())
             self.search_thread = FileSearchThread(query, self.address_bar.text(), self.index_count, self.index_cache, mode=0 if "All Drives" in self.search_bar.placeholderText() else 1)
             self.search_thread.noMatchingFiles.connect(self.onNoMatchingFiles)
             self.search_thread.searchFinished.connect(self.onSearchFinished)
@@ -1940,7 +2011,7 @@ class FlashFinder(QMainWindow):
             file_info = QFileInfo(current_path)
             
             file_size = self.format_file_size(file_info.size())
-            date_created = file_info.birthTime().toString(Qt.DateFormat.DefaultLocaleShortDate)
+            date_created = file_info.birthTime().toString(Qt.DateFormat.TextDate)
             file_owner = self.get_file_owner(current_path).split("\\")[-1]
             page_info = ""
             if ext.lower() == ".pdf":

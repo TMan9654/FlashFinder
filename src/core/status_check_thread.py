@@ -70,7 +70,7 @@ class StatusCheckThread(QThread):
                         data = pload(pklfile)
                         current_time = self.time.time()
                         if search_settings.get("CACHED_SEARCH"):
-                            if not target_file in self.index_cache.keys() or current_time - self.previous_time >= 3600:
+                            if not target_file in self.index_cache.keys() or current_time - self.previous_time >= 300:
                                 self.previous_time = current_time
                                 self.index_cache[target_file] = data["index"]
                                 with open(self.indexer_running_file, "w") as f:

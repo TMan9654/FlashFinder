@@ -285,8 +285,8 @@ class FileSearchThread(QThread):
         return [drive[0] for drive in drives]
 
     def load_settings(self):
-        if path.exists(path.join(SETTINGS_PATH, "{COMPUTERNAME}_search-settings.json")):
-            with open(path.join(SETTINGS_PATH, "{COMPUTERNAME}_search-settings.json"), "r") as f:
+        if path.exists(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_search-settings.json")):
+            with open(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_search-settings.json"), "r") as f:
                 search_settings = jload(f)
         else:
             search_settings = {

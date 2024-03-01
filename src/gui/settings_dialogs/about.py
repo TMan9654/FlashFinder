@@ -15,9 +15,9 @@ class About(QWidget):
         description_group = QGroupBox("Description")
         self.description_text = QLabel(
         """FlashFinder is a windows file explorer replacement that boasts some enhanced features.\n
-        Features such as fast and advanced searching, file comparison, power renaming, and tabbed browsing to name a few.\n
-        Take a look at the documentation to learn more.\n
-        Review the changelog to learn about new additions in each update."""
+Features such as fast and advanced searching, file comparison, power renaming, and tabbed browsing to name a few.\n
+Take a look at the documentation to learn more.\n
+Review the changelog to learn about new additions in each update."""
         )
         
         suggestion_group = QGroupBox("Suggestions / Report Bug:")

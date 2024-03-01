@@ -3,8 +3,12 @@ from ...config.config import INDEXES_PATH, SETTINGS_PATH, COMPUTERNAME
 
 from os import path
 from json import load, dump
+from ctypes import wintypes
+from functools import partial
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget, QCheckBox, QLabel, QLineEdit, QPushButton, QGroupBox, QVBoxLayout
+from PySide6.QtGui import QGuiApplication
+from PySide6.QtWidgets import QWidget, QCheckBox, QLabel, QLineEdit, QPushButton, QGroupBox, \
+    QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup
 
 class SearchSettings(QWidget):
     def __init__(self, parent=None):
@@ -16,24 +20,44 @@ class SearchSettings(QWidget):
         self.EXCLUDE_PATHS = self.search_settings.get("EXCLUDE_PATHS")
         self.INDEXED_SEARCH = self.search_settings.get("INDEXED_SEARCH")
         self.CACHED_SEARCH = self.search_settings.get("CACHED_SEARCH")
+        self.HISTORY_LIFETIME = self.search_settings.get("HISTORY_LIFETIME")
         self.init_ui()
 
     def init_ui(self):
         self.include_subfolders_checkbox = QCheckBox('Include subfolders in search results when using "Search Current Path"')
         self.include_subfolders_checkbox.setChecked(self.INCLUDE_SUBFOLDERS)
         self.include_subfolders_checkbox.stateChanged.connect(self.include_subfolders)
-
-        self.indexed_search_checkbox = QCheckBox("Use indexes when searching\n(Searches may be faster but might not be the most up-to-date.)")
-        self.indexed_search_checkbox.setChecked(self.INDEXED_SEARCH)
-        self.indexed_search_checkbox.stateChanged.connect(self.indexed_search)
         
+        self.search_history_label = QLabel("Search History Lifetime: ")
+        self.search_history_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        self.search_history_buttons = QWidget()
+        search_history_button_group = QButtonGroup()
+        periods = ["1 day", "2 days", "3 days", "5 days", "30 days", "90 days"]
+        button_group_layout = QHBoxLayout()
+        for period in periods:
+            time = int(period.split(" ")[0])
+            radio_button = QRadioButton(period)
+            if time == self.HISTORY_LIFETIME / 86400:
+                radio_button.setChecked(True)
+            radio_button.setFixedHeight(20)
+            button_func = partial(self.set_history_lifetime, time)
+            radio_button.clicked.connect(button_func)
+            button_group_layout.addWidget(radio_button)
+            search_history_button_group.addButton(radio_button)
+        search_history_button_group.setExclusive(True)
+        self.search_history_buttons.setLayout(button_group_layout)
+
         self.exclude_paths_label = QLabel("Excluded indexer paths: ")
         self.exclude_paths_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
         self.exclude_paths_lineedit = QLineEdit()
         self.exclude_paths_lineedit.setText(str(self.EXCLUDE_PATHS))
         self.exclude_paths_lineedit.textEdited.connect(self.set_excluded_paths)
         
-        self.cache_indexes_checkbox = QCheckBox("Cache indexes for searching\n(Searches may be faster but results in signifcantly greater memory usage. [~750MB of RAM per 1,000,000 indexed files])")
+        self.indexed_search_checkbox = QCheckBox("Use indexes when searching\n(Searches will be faster but might not be the most up-to-date.)")
+        self.indexed_search_checkbox.setChecked(self.INDEXED_SEARCH)
+        self.indexed_search_checkbox.stateChanged.connect(self.indexed_search)
+        
+        self.cache_indexes_checkbox = QCheckBox("Cache indexes for searching\n(Searches will be faster but results in signifcantly greater memory usage. [~750MB of RAM per 1,000,000 indexed files])")
         self.cache_indexes_checkbox.setChecked(self.CACHED_SEARCH)
         self.cache_indexes_checkbox.stateChanged.connect(self.cached_search)
         
@@ -48,6 +72,8 @@ class SearchSettings(QWidget):
         main_layout = QVBoxLayout(self)
 
         general_group_layout.addWidget(self.include_subfolders_checkbox)
+        general_group_layout.addWidget(self.search_history_label)
+        general_group_layout.addWidget(self.search_history_buttons)
         general_group_layout.addWidget(self.exclude_paths_label)
         general_group_layout.addWidget(self.exclude_paths_lineedit)
         how_to_search_group_layout.addWidget(self.indexed_search_checkbox)
@@ -149,6 +175,11 @@ class SearchSettings(QWidget):
         if paths:
             self.EXCLUDE_PATHS = list(paths)
         self.save_settings()
+        
+    def set_history_lifetime(self, time: int):
+        if time:
+            self.HISTORY_LIFETIME = time * 86400
+        self.save_settings()
 
     def indexed_search(self, state: int):
         if state == 2:
@@ -173,7 +204,8 @@ class SearchSettings(QWidget):
             "INCLUDE_SUBFOLDERS": True,
             "EXCLUDE_PATHS": ["$Recycle.Bin", "$RECYCLE.BIN", "System Volume Information", "Windows", "Program Files", "Program Files (x86)", "ProgramData", "Recovery"],
             "INDEXED_SEARCH": True,
-            "CACHED_SEARCH": True
+            "CACHED_SEARCH": True,
+            "HISTORY_LIFETIME": 259200
         }
 
         if path.exists(self.search_settings_path):
@@ -200,7 +232,8 @@ class SearchSettings(QWidget):
             "INDEXED_SEARCH": self.INDEXED_SEARCH,
             "EXCLUDE_PATHS": self.EXCLUDE_PATHS,
             "INCLUDE_SUBFOLDERS": self.INCLUDE_SUBFOLDERS,
-            "CACHED_SEARCH": self.CACHED_SEARCH
+            "CACHED_SEARCH": self.CACHED_SEARCH,
+            "HISTORY_LIFETIME": self.HISTORY_LIFETIME
         }
         try:
             with open(self.search_settings_path, "w") as f:
@@ -212,4 +245,3 @@ class SearchSettings(QWidget):
         rebuild_signal_path = path.join(SETTINGS_PATH, f"{COMPUTERNAME}_rebuild")
         with open(rebuild_signal_path, "w") as f:
             f.write("Rebuild Signalled")
-

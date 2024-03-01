@@ -27,7 +27,6 @@
         }
         li:before {
             counter-increment: item;
-            content: counters(item, ".") ". ";
         }
         ul p {
             margin-left: 20px;
@@ -73,6 +72,11 @@
     QThread: Destroyed while thread is still running
     QFileSystemWatcher: FindNextChangeNotification failed for "C:\Users\tburns\Desktop\Maxfield\JOBS\NVIS Approvals\31957"  (Access is denied.)
     
+
+DONE    Added scrolling search history
+    Make use of the tree view and allow for creating sub items based on selection in the main view
+DONE    Add history saving and setting to adjust backup duration
+DONE    Improved index caching -> faster searches
 DONE    Fix update function
 DONE    Fix "Browse in new tab" to "Browse to in new tab" if is a file and make it actually browse to as well
 DONE    Add better chance for no zombie processes

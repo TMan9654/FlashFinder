@@ -139,7 +139,9 @@ class FileIndexer(Process):
         duration_path = self._get_duration_path(drive)
         if path.exists(duration_path):
             with open(duration_path, 'r') as f:
-                return int(f.read().strip())
+                index_time = f.read().strip()
+                if index_time:
+                    return int(index_time)
         return 3600
 
     def _get_duration_path(self, drive: str) -> str:
@@ -164,7 +166,7 @@ class FileIndexer(Process):
                     file_type, file_ext = "File Folder", None
                 else:
                     name, file_ext = path.splitext(name)
-                    file_type = file_ext.split(".")[-1] + " File"
+                    file_type = file_ext + " File"
                 if path.exists(full_path):
                     try:
                         creation_date = datetime.fromtimestamp(path.getctime(full_path)).strftime("%Y/%m/%d %I:%M %p")
@@ -209,6 +211,7 @@ class FileIndexer(Process):
         if path.exists(search_settings_path):
             with open(search_settings_path, "r") as f:
                 search_settings = jload(f)
-                excluded_paths = search_settings["EXCLUDE_PATHS"]
+                if "EXCLUDE_PATHS" in search_settings:
+                    excluded_paths = search_settings["EXCLUDE_PATHS"]
         return excluded_paths
     
