@@ -2,6 +2,8 @@
 from ...config.config import VERSION, DATA_PATH, COMPUTERNAME
 
 from os import path
+from shutil import copy2
+from datetime import datetime
 from PySide6.QtWidgets import QWidget, QGroupBox, QLabel, QTextEdit, QPushButton, QVBoxLayout, QFileDialog
 
 class About(QWidget):
@@ -80,8 +82,6 @@ Review the changelog to learn about new additions in each update."""
             self.attach_button.setText(f"Attached: {path.basename(self.attachment_path)}")
         
     def submit_suggestion(self):
-        from datetime import datetime
-        from shutil import copy
         suggestion = self.suggestion_text.toPlainText()
         current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
@@ -92,14 +92,15 @@ Review the changelog to learn about new additions in each update."""
             f"Suggestion:\n{suggestion}\n"
         )
         
-        with open(path.join(self.data_path, "User Suggestions.txt"), "a") as file:
-            file.write(formatted_suggestion)
-            if self.attachment_path:
-                basename = path.basename(self.attachment_path)
-                unique_filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{basename}"
-                destination_path = path.join(DATA_PATH, unique_filename)          
-                copy(self.attachment_path, destination_path)                
-                file.write(f"Attached file: {destination_path}\n")
+        if path.exists(path.join(DATA_PATH, "User Suggestions.txt")):
+            with open(path.join(DATA_PATH, "User Suggestions.txt"), "a") as file:
+                file.write(formatted_suggestion)
+                if self.attachment_path:
+                    basename = path.basename(self.attachment_path)
+                    unique_filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{basename}"
+                    destination_path = path.join(DATA_PATH, unique_filename)          
+                    copy2(self.attachment_path, destination_path)                
+                    file.write(f"Attached file: {destination_path}\n")
 
             file.write("========================================\n\n")
         self.suggestion_text.clear()

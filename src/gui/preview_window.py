@@ -60,7 +60,6 @@ class PreviewWindow(QGraphicsView):
         self.explorer.update_details_bar()
 
     def _load_pdf(self, file_path: str):
-
         try:
             with fopen(file_path) as pdf_document:
                 self.page_count = pdf_document.page_count
@@ -72,7 +71,6 @@ class PreviewWindow(QGraphicsView):
                 svg = page.get_svg_image()
                 svg_item = QGraphicsSvgItem()
                 svg_item.setSharedRenderer(QSvgRenderer(QByteArray(svg.encode("utf-8"))))
-                
                 self.preview_scene.addItem(svg_item)
 
         except Exception as e:

@@ -1,7 +1,7 @@
-from os import path, environ, name
+from os import path, environ
 from darkdetect import isDark
 
-VERSION = "7.5.4"
+VERSION = "7.6.0"
 
 COMPUTERNAME = environ.get("COMPUTERNAME", "DefaultName")
 
@@ -14,7 +14,6 @@ DOCUMENTS_PATH = _documents_path if path.exists(_documents_path) else _onedrive_
 _pictures_path = path.join(environ["USERPROFILE"], "Pictures")
 _onedrive_pictures_path = path.join(environ["USERPROFILE"], "OneDrive", "Pictures")
 PICTURES_PATH = _pictures_path if path.exists(_pictures_path) else _onedrive_pictures_path
-
 
 BASE_PATH = path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 DATA_PATH = path.join(BASE_PATH, "data")

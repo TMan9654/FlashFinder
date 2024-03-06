@@ -24,13 +24,15 @@ from .gui.settings_dialogs.settings import SettingsDialog
 
 from .models.file_system_model import FileSystemModel
 
+from .utils.utils import fix_coordinate
+
 from collections import OrderedDict
 from send2trash import send2trash
 from pythoncom import CoCreateInstance, CLSCTX_INPROC_SERVER, IID_IPersistFile
 from win32com.shell import shell, shellcon
 from win32api import GetLogicalDriveStrings
 from win32file import GetDriveType, DRIVE_REMOTE
-from os import path, getpid, remove, walk, startfile, makedirs, listdir, rename, mkdir, rmdir
+from os import path, remove, walk, startfile, makedirs, listdir, rename, mkdir, rmdir
 from subprocess import Popen
 from json import load, dump
 from zipfile import ZipFile
@@ -68,11 +70,12 @@ class FlashFinder(QMainWindow):
         self.tab_iterator = 0
         
         self.index_cache = {}
-        self.indexer = FileIndexer(getpid())
+        self.indexer = FileIndexer()
         self.indexer.start()
         
         self.status_checker = StatusCheckThread(self)
         self.status_checker.statusChanged.connect(self.update_indexing_labels)
+        self.status_checker.requestClose.connect(self.cleanup)
         self.status_checker.start()
         
         self.initUI()
@@ -174,6 +177,7 @@ class FlashFinder(QMainWindow):
         self.search_results_tree.setRootIsDecorated(False)
         self.search_results_tree.sortByColumn(2, Qt.SortOrder.AscendingOrder)
         self.search_results_tree.header().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self.main_view.setColumnWidth(0, 400)
         self.search_results_tree.header().setStretchLastSection(False)
         self.search_results_tree.itemClicked.connect(self.on_search_result_item_clicked)
         self.search_results_tree.itemDoubleClicked.connect(self.on_search_result_item_double_clicked)
@@ -669,6 +673,9 @@ class FlashFinder(QMainWindow):
         self.search_mode_button.setToolTip(self.search_bar.placeholderText())
 
     def cleanup(self):
+        self.close()
+        self.status_checker.terminate()
+        self.indexer.stop()
         self.save_tabs()
         if path.exists(path.join(INDEXES_PATH, f"{COMPUTERNAME}_is_alive")):
             remove(path.join(INDEXES_PATH, f"{COMPUTERNAME}_is_alive"))
@@ -934,7 +941,7 @@ class FlashFinder(QMainWindow):
         if main_view:
             if self.load_general_settings().get("RELOAD_MAIN_TAB"):
                 try:
-                    with open(path.join(self.settings_path, f"{COMPUTERNAME}_tabs.json"), "r") as file:
+                    with open(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_tabs.json"), "r") as file:
                         tabs = load(file)
                         self.main_view.setRootIndex(self.model.index(tabs["Main"]))
                         return self.main_view
@@ -948,7 +955,7 @@ class FlashFinder(QMainWindow):
             new_view.setRootIndex(self.model.index(DESKTOP_PATH))
         else:
             new_view.setRootIndex(self.model.index(root_path))
-        new_view.header().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        new_view.header().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         new_view.setColumnWidth(0, 400)
         new_view.setSortingEnabled(True)
         new_view.sortByColumn(0, Qt.SortOrder.AscendingOrder)
@@ -994,11 +1001,6 @@ class FlashFinder(QMainWindow):
         with ZipFile(zip_path, "r") as zipf:
             zipf.extractall(extract_folder)
         self.undo_history.append(("extract", extract_folder))
-    
-    def fix_coordinate(self, value: int):
-        if value > 2**15:
-            return value - 2**16
-        return value
 
     def format_file_size(self, size_in_bytes: int) -> str:
         suffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
@@ -1184,7 +1186,7 @@ class FlashFinder(QMainWindow):
     def load_search_history(self):
         if path.exists(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_search_history.json")):
             with open(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_search_history.json"), "r") as file:
-                self.search_history = load(file)
+                self.search_history = OrderedDict(load(file))
                 self.remove_old_search_history()
                 self.search_bar.addItems(self.search_history.keys())
             
@@ -1293,7 +1295,7 @@ class FlashFinder(QMainWindow):
             self.is_being_dragged = False
     
         if MSG == 0x84:  # WM_NCHITTESTS
-            x, y = self.fix_coordinate(lParam & 0xFFFF), self.fix_coordinate(lParam >> 16)
+            x, y = fix_coordinate(lParam & 0xFFFF), fix_coordinate(lParam >> 16)
             pos = self.mapFromGlobal(QPoint(x, y))
             
             # Tolerance for edge detection
@@ -1432,8 +1434,14 @@ class FlashFinder(QMainWindow):
             QMessageBox.critical(self, "File Open Error", f"There was a problem opeing the file:\n{e}")
 
     def open_settings(self):
+        with open("C:\\Users\\Terrin\\OneDrive\\Desktop\\file.txt", "w") as f:
+            f.write("Settings Opening")
         settings_dialog = SettingsDialog(self)
+        with open("C:\\Users\\Terrin\\OneDrive\\Desktop\\file2.txt", "w") as f:
+            f.write("SettingsDialog Object Created")
         settings_dialog.exec()
+        with open("C:\\Users\\Terrin\\OneDrive\\Desktop\\file3.txt", "w") as f:
+            f.write("Settings Executed")       
 
     def paste_item(self):
         if self.access.text() == "Write":

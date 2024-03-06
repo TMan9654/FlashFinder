@@ -3,7 +3,8 @@ from .config.config import ICONS_PATH
 from .flashfinder import FlashFinder
 
 from os import path
-from sys import argv, exit
+from sys import argv
+from sys import exit as sexit
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap, QIcon
 from PySide6.QtWidgets import QApplication, QSplashScreen, QMessageBox
@@ -19,10 +20,9 @@ def launch_flashfinder():
     splash.show()
     app.setWindowIcon(QIcon(path.join(ICONS_PATH, "app.ico")))
     explorer = FlashFinder(app)
-    app.aboutToQuit.connect(explorer.cleanup)
     splash.finish(explorer)
     try:
-        exit(app.exec())
+        sexit(app.exec())
     except Exception as e:
         error_dialog = QMessageBox()
         error_dialog.setIcon(QMessageBox.Icon.Critical)

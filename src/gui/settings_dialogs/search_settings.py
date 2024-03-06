@@ -3,10 +3,8 @@ from ...config.config import INDEXES_PATH, SETTINGS_PATH, COMPUTERNAME
 
 from os import path
 from json import load, dump
-from ctypes import wintypes
 from functools import partial
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import QWidget, QCheckBox, QLabel, QLineEdit, QPushButton, QGroupBox, \
     QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup
 
@@ -32,7 +30,7 @@ class SearchSettings(QWidget):
         self.search_history_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
         self.search_history_buttons = QWidget()
         search_history_button_group = QButtonGroup()
-        periods = ["1 day", "2 days", "3 days", "5 days", "30 days", "90 days"]
+        periods = ["0 days", "1 day", "2 days", "3 days", "5 days", "30 days", "60 days", "90 days"]
         button_group_layout = QHBoxLayout()
         for period in periods:
             time = int(period.split(" ")[0])

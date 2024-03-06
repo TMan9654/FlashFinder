@@ -1,4 +1,7 @@
 
+from ...config.config import DOCS_PATH
+
+from os import path
 from PySide6.QtWidgets import QWidget, QGroupBox, QTextBrowser, QVBoxLayout
 
 
@@ -9,14 +12,14 @@ class Help(QWidget):
         documentation_group = QGroupBox()
         self.documentation_browser = QTextBrowser()
         self.documentation_browser.setOpenExternalLinks(True)
-
-        self.load_html_content(self.documentation_browser, "docs\\main_menu.html")
+        
+        self.load_html_content(self.documentation_browser, path.join(DOCS_PATH, "main_menu.html"))
 
         changelog_group = QGroupBox()
         self.changelog_browser = QTextBrowser()
         self.changelog_browser.setOpenExternalLinks(True)
         
-        self.load_html_content(self.changelog_browser, "docs\\changelog.html")
+        self.load_html_content(self.changelog_browser, path.join(DOCS_PATH, "changelog.html"))
 
         main_layout = QVBoxLayout()
         documentation_group_layout = QVBoxLayout()
@@ -44,6 +47,7 @@ class Help(QWidget):
         """)
 
     def load_html_content(self, browser: QTextBrowser, filepath: str):
-        with open(filepath, "r", encoding="utf-8") as file:
-            html_content = file.read()
-        browser.setHtml(html_content)
+        if path.exists(filepath):
+            with open(filepath, "r", encoding="utf-8") as file:
+                html_content = file.read()
+            browser.setHtml(html_content)

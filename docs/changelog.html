@@ -36,164 +36,58 @@
     </style>
 </head>
 <body>
-<!-- TO DO:
-    Bug fixes:
-
-    DONE    Traceback (most recent call last): Problem with saving over existing comparison file
-        File "C:\Users\tburns\OneDrive\Desktop\Code\Python\FlashFinder\FlashFinder.py", line 638, in run
-            output_file_path = self.handle_files(self.files)
-                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        File "C:\Users\tburns\OneDrive\Desktop\Code\Python\FlashFinder\FlashFinder.py", line 802, in handle_files
-            pdf.set_toc(toc)
-            ^^^^^^^^^^^^^^^^^
-        File "c:\Users\tburns\Downloads\Software\Portable Python\WPy64-31150\python-3.11.5.amd64\Lib\site-packages\fitz\fitz.py", line 4721, in save
-            return _fitz.Document_save(self, filename, garbage, clean, deflate, deflate_images, deflate_fonts, incremental, ascii, expand, linear, no_new_id, appearance, pretty, encryption, permissions, owner_pw, user_pw)
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        RuntimeError: cannot remove file 'C:/Users/tburns/Desktop/Maxfield/JOBS/COMPARISONS/28441-4106D; PIPING - AQUA MANIFOLD/28441-4106D-R1; PIPING - AQUA MANIFOLD Comparison.pdf': Permission denied
-
-    DONE    Traceback (most recent call last): Auto page size wasnt giving correct value (page size incorporates DPI? 72 DPI?)
-        File "C:\Users\tburns\OneDrive\Desktop\Code\Python\FlashFinder\FlashFinder.py", line 639, in run
-            output_file_path = self.handle_files(self.files)
-                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        File "C:\Users\tburns\OneDrive\Desktop\Code\Python\FlashFinder\FlashFinder.py", line 758, in handle_files
-            markup = self.mark_differences(image1, image2)
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        File "C:\Users\tburns\OneDrive\Desktop\Code\Python\FlashFinder\FlashFinder.py", line 681, in mark_differences
-            output.append(marked_image.resize((int(self.PAGE_SIZE[0] * self.DPI_LEVEL), int(self.PAGE_SIZE[1] * self.DPI_LEVEL))))
-                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        File "C:\Users\tburns\Downloads\Software\Portable Python\WPy64-31150\python-3.11.5.amd64\Lib\site-packages\PIL\Image.py", line 2171, in resize
-            im = im.resize(size, resample, box)
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        File "C:\Users\tburns\Downloads\Software\Portable Python\WPy64-31150\python-3.11.5.amd64\Lib\site-packages\PIL\Image.py", line 2193, in resize
-            return self._new(self.im.resize(size, resample, box))
-                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        MemoryError
-    
-    QThread: Destroyed while thread is still running
-    QFileSystemWatcher: FindNextChangeNotification failed for "C:\Users\tburns\Desktop\Maxfield\JOBS\NVIS Approvals\31957"  (Access is denied.)
-    
-
-DONE    Added scrolling search history
-    Make use of the tree view and allow for creating sub items based on selection in the main view
-DONE    Add history saving and setting to adjust backup duration
-DONE    Improved index caching -> faster searches
-DONE    Fix update function
-DONE    Fix "Browse in new tab" to "Browse to in new tab" if is a file and make it actually browse to as well
-DONE    Add better chance for no zombie processes
-DONE    Add excluded indexer paths
-DONE    Add duplicate tab action
-DONE    Open in new tab - main view (browse to and browse in new tab)
-DONE    Fix error in indexer with modified and creation date
-    Shortcut properties
-    Template directories
-    Fix preview resizing (undocked it wants to move to be its original right edge location)
-    Fix caching status updates (revert back to original status)
-    Add support for shortcut/symlink naming
-    Add setting to exclude paths for indexing
-    Add auto renaming
-    Add renaming based on content
-    Add folder syncing
-    Add maximising for undocked windows
-    Add parse time alongside search time
-    Add include folders in search setting
-    Add option when opening a new tab to change to it
-    symbolic links
-    Make changelog's per version
-    Add description of copy types to documentation + new names
-DONE    Add temp folder purging
-    Make settings dialog non blocking?
-    Add date created column?
-    Add collapse/expand level hotkeys
-    Add collapse/expand all hotkey
-    Make operation dialogs non blocking
-    Add operations progress window for longer processes
-    Add all operations to a thread
-    Make tabs undockable
-    Make settings files into 1 file
-    Add images to documentation
-    Make tabs start with current dir as name
-    Upgrade documentation, add links to docs in changelog where necessary
-    Add a "Task Manager" for flashfinder showing things like the indexer status, app usage, etc
-    Change status to app status rather then indexer status
-    Statistics
-    Add reload tabs on open setting
-    Add more error messages (move, paste, etc) to capture things like file in use
-    Make undo per tab
-    Add windows shortcuts (move window, etc)
-DONE ISH    Add ability to remotely terminate FlashFinder for other users (Process manager?)
-    Add print command to context menu
-    Taskbar loading bar
-    Ability to change view types (dual pane, etc)
-    Open With (Consigno?)
-    Process Manager (Admin Controls)
-    Logging
-    Filtering
-    Macro Commands
-    Add 3d model viewing support, add support for excel, add support to preview folder structure, videos, etc
-    Audio File preview?
-    Pinned item icons
-    Polish the GUI
-    File sharing
-    Notifications
-    File Conversion Operations
-    Properties window enhancements (attributes, previous versions, etc)
-    Fix search results header (end area)
-    Quick references (shortcuts, engineering related?) (add to settings?)
-    File Versioning
-    Color coding / Tagging
-    Smart Tagging (Tagging based on content)
-    Text File Comparison
-    Batch Operations?
-    Virtual Folders
-    Integrated text editor / image editor
-    Customizable UI / Custom Themes
-    Integrated Terminal / IDE
-    Duplicate File Finder
-    File / Folder Locking
-    Customizable Shortcuts
-    Backup / Restore
-    History dropdown on back/forward buttons
-    Disk Usage Analyzer
-    File Content Searching
-    Redo
-    Navigate ZIP files
-    Directory Visualizer
-    Password Manager?
-    File hashing tool?
-    Cross Device File Transfer
-    Integrated Note Taking
-    QR Code Generator
-    Look at more advanced clipboard?
-    On hover file details
-    Multidimensional sorting (multiple sort filters)
-    Custom file icons (user customizable as well)
-    Location based customizations?
-    Smart folders
-    Commenting / Notes for files and folders
-    Conversion tools
-    Tooltips
-    System cleanup tool
-    Network activity?
-    Workflow automation (Think IFTTT style where an action can trigger a series of automated actions)
-    Ephemeral File Sharing (Create temporary, self-destructing links for sharing files, enhancing security)
-    File relationship mapping
-    Workspaces
-    File analytics (how many times accessed, modification history, etc)
-    Automatic archiving / deleting after certain amount of time
-    System monitor (cpu, gpu, ram, etc)
-
-LONG TERM DEVELOPMENT FEATURES:
-    Update to PyQt6
-    Rework app, nicer code, optimize functions, use C++ extensions, etc
-    Machine learning
-    Collaborative features (Chat, shared folders, real time collaboration in files, etc)
-    BOM Viewer
-    Material Database / Component Library (goes along with reference material)
-    CAD tools (compare files, viewer, converter, etc)
-    PDM Integration
-    AI Assistant
--->
     <h1>Changelog</h1>
+
+    <h3>VERSION 7.6.0</h3>
+    <ol>
+
+        <li>Fixed a bug in the indexer subprocess.</li>
+        <p>Fixed a bug in the indexer subprocess when trying to get the file modified and creation date.</p>
+
+        <li>Added a scrolling search history.</li>
+        <p>Added a scrolling search history and removed the limit of 10.</p>
+
+        <li>Added search history saving.</li>
+        <p>Added search history saving. The duration settings are under the "Search" settings tab.</p>
+
+        <li>Improved index caching.</li>
+        <p>Improved index memory caching feature for more consistent faster searches.</p>
+
+        <li>Further improved crash cleanup reliability.</li>
+        <p>Further improved on reliability for the subprocesses adding a "dead mans switch" approach on top of the existing measures.</p>
+
+        <li>Fixed "Browse to new tab" for files and folders.</li>
+        <p>Files now have the options "Browse to in new tab" and "Browse in new tab". Browsing to is more reliable overall.</p>
+
+        <li>Added the ability to exclude indexer paths.</li>
+        <p>Added the option for excluding indexer paths under the search settings. (Will not show up in searhces)</p>
+
+        <li>Added "Duplicate Tab" action to the context menu.</li>
+        <p>Added the option to duplicate the current tab in the context menu.</p>
+
+        <li>Added the option to open in new tab.</li>
+        <p>Added "Open in new tab" to context menu.</p>
+
+        <li>Added temp folder purging.</li>
+        <p>The "Temp" folder now gets purged on close to avoid large temp files (used for the undo function).</p>
+
+        <li>Fixed bug in the AUTO page resizing in the compare feature.</li>
+        <p>Fixed a bug in the compre feature when using the AUTO page size. Pages with different DPI levels are now accounted for.</p>
+
+        <li>Fixed a bug in the compare feature using scale pages.</li>
+        <p>When using scale pages on different DPI levels, an unexpected memory usage could occur causing a crash.</p>
+
+        <li>Fixed a bug when compare file already existed.</li>
+        <p>If a compare file already exists, the new file is now saved with a rev number.</p>
+
+        <li>Complete refactor of the codebase.</li>
+        <p>Completely overhauled the codebase for easier maintenance, expandability, and more performant code.</p>
+
+        <li>Upgraded the GUI framework from PyQt5 to PySide6.</li>
+        <p>Upgraded the GUI framework for better performance, more features, and the better LGPL licensing allowing for business use.</p>
+        <p>PySide6 also is now the newly labelled "Main" Qt framework meaning better reliability in the long run.</p>
+        
+    </ol>
 
     <h3>VERSION 7.5.3 (Bug Fixes)</h3>
     <ol>

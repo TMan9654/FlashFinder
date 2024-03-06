@@ -12,6 +12,7 @@ class StatusCheckThread(QThread):
     import time
     
     statusChanged = Signal(str, int, dict)
+    requestClose = Signal()
     
     def __init__(self, parent=None):
         super(StatusCheckThread, self).__init__(parent)
@@ -48,7 +49,7 @@ class StatusCheckThread(QThread):
         for file in listdir(BASE_PATH):
             if "update-" in file.lower():
                 Popen([f"{BASE_PATH}\\dialog.exe"])
-                self.parent().close()
+                self.requestClose.emit()
             
     def get_index_count(self) -> int:
         if path.exists(self.indexer_running_file):

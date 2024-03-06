@@ -8,13 +8,11 @@ from win32file import GetDriveType, DRIVE_REMOTE
 from win32api import GetLogicalDriveStrings
 from filelock import FileLock, Timeout
 from datetime import datetime
-from psutil import pid_exists
 from json import load as jload
 
 class FileIndexer(Process):
-    def __init__(self, parent_pid):
+    def __init__(self):
         super(FileIndexer, self).__init__()
-        self.parent_pid = parent_pid
         self.rebuild_signal_path = path.join(INDEXES_PATH, "rebuild_signal")
         self.parent_isalive_path = path.join(INDEXES_PATH, f"{COMPUTERNAME}_is_alive")
         self.excluded_paths = self.load_exclude_paths()
@@ -25,6 +23,7 @@ class FileIndexer(Process):
         self.previous_status = None
         
     def stop(self):
+        """"Gracfully stops the file indexer process."""
         with self.exit_flag.get_lock():
             self.exit_flag.value = 1
         self.join()
@@ -33,6 +32,7 @@ class FileIndexer(Process):
             remove(path.join(INDEXES_PATH, f"{COMPUTERNAME}_indexer_running"))
 
     def _claim_network_drive(self, drive: str) -> FileLock:
+        """Aquires the network file index lock."""
         lock_file = path.join(INDEXES_PATH, f"Drive_{drive}_Claimed.lock")
         lock = FileLock(lock_file, timeout=0.5)
         try:
@@ -42,12 +42,15 @@ class FileIndexer(Process):
             return None
         
     def _release_network_drive(self, lock: FileLock):
+        """Releases the network file index lock."""
         if lock:
             lock.release()
 
     def _claim_local_indexing(self) -> FileLock:
+        """Aquires the local file indexing lock."""
         lock_file = path.join(INDEXES_PATH, f"{COMPUTERNAME}_Local_Indexing_Claimed.lock")
         lock = FileLock(lock_file, timeout=0.5)
+        sleep(2)
         try:
             lock.acquire()
             return lock
@@ -55,17 +58,19 @@ class FileIndexer(Process):
             return None
 
     def _release_local_indexing(self, lock: FileLock):
+        """Releases the local file indexing lock."""
         if lock:
             lock.release()
 
     def run(self):
+        """Runs a continuous loop for maintaining index files and communicating with the parent process."""
         self.local_lock = self._claim_local_indexing()
         network_lock = None
         try:
             while not self.exit_flag.value:
-                self._check_parent()
                 active_drives = self._get_active_drives()
                 for drive in active_drives:
+                    self._check_parent()
                     if self.exit_flag.value:
                         break
                     if self._is_network_drive(drive):
@@ -86,6 +91,7 @@ class FileIndexer(Process):
             self._release_network_drive(network_lock)
                 
     def _remove_indexer_running_file(self):
+        "Removes the indexers signal file for cleanup."
         if path.exists(path.join(INDEXES_PATH, f"{COMPUTERNAME}_indexer_running")):
             try:
                 remove(path.join(INDEXES_PATH, f"{COMPUTERNAME}_indexer_running"))
@@ -94,25 +100,33 @@ class FileIndexer(Process):
                 self._remove_indexer_running_file()
                 
     def _check_parent(self):
-        if path.exists(self.parent_isalive_path) or not pid_exists(self.parent_pid):
-            remove(self.parent_isalive_path)
+        """Checks to see if the parent process is still alive and peacefully ends the indexer process if it does not."""
+        if path.exists(self.parent_isalive_path):
+            sleep(1)
+            if path.exists(self.parent_isalive_path):
+                remove(self.parent_isalive_path)
         else:
             if self.counter > 3:
                 with self.exit_flag.get_lock():
                     self.exit_flag.value = 1
                 self.counter = 0
-        self.counter += 1
+            self.counter += 1
+            sleep(5)
+            self._check_parent()
 
     def _is_network_drive(self, drive: str) -> bool:
+        """Returns a boolean value indicating whether the drive path is a network drive."""
         drive_type = GetDriveType(f"{drive}:\\")
         return drive_type == DRIVE_REMOTE
 
     def _get_active_drives(self) -> list:
+        """Returns a list of active drives."""
         drives = GetLogicalDriveStrings()
         drives = drives.split("\000")[:-1]
         return [drive[0] for drive in drives]
 
     def _check_index(self, drive: str, num_active_drives: int) -> bool:
+        """Checks if the index file requires reindexing based on the rebuild button being pressed or the path exceeds the dynamic indexing time."""
         if path.exists(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_rebuild")) and self.num_rebuilt != num_active_drives:
             self.num_rebuilt += 1
             return True
@@ -132,10 +146,12 @@ class FileIndexer(Process):
         return False
     
     def _rebuilt(self):
+        """Removes the rebuild signal file indicating all indexes have been rebuilt."""
         if path.exists(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_rebuild")):
             remove(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_rebuild"))
     
     def _get_previous_duration(self, drive: str) -> int:
+        """Returns the previous duration taken to index the given drive."""
         duration_path = self._get_duration_path(drive)
         if path.exists(duration_path):
             with open(duration_path, 'r') as f:
@@ -145,9 +161,11 @@ class FileIndexer(Process):
         return 3600
 
     def _get_duration_path(self, drive: str) -> str:
+        """Returns the file path for the duration file for the given drive."""
         return path.join(INDEXES_PATH, f"{COMPUTERNAME}_Drive_{drive}_Duration")
 
     def _index_drive(self, drive: str):
+        """Indexes the given drive outputting a indexing duration file and a pickle index."""
         start_time = time()
         drive_path = f"{drive}:\\"
         index_path = self._get_index_path(drive)
@@ -189,12 +207,14 @@ class FileIndexer(Process):
         self._update_status("Idle")
     
     def _get_index_path(self, drive: str) -> str:
+        """Returns the index path for the given drive."""
         index_path = path.join(INDEXES_PATH, f"{COMPUTERNAME}_Drive_{drive}_Index.pkl")
         if self._is_network_drive(drive):
             index_path = path.join(INDEXES_PATH, f"Drive_{drive}_Index.pkl")
         return index_path
 
     def _update_status(self, status: str):
+        """Writes the indexer status to the indexers signal file for communication with the parent process."""
         status_file = path.join(INDEXES_PATH, f"{COMPUTERNAME}_indexer_running")
         if status != self.previous_status:
             self.previous_status = status
@@ -205,6 +225,7 @@ class FileIndexer(Process):
                 self._update_status(status)
                 
     def load_exclude_paths(self) -> list:
+        """Returns a list paths for the indexer to exclude from indexing. Loaded from the settings file."""
         search_settings_path = path.join(SETTINGS_PATH, f"{COMPUTERNAME}_search-settings.json")
         default_paths = ["$Recycle.Bin", "$RECYCLE.BIN", "System Volume Information", "Windows", "Program Files", "Program Files (x86)", "ProgramData", "Recovery"]
         excluded_paths = default_paths
