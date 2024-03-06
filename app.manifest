@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
   <assemblyIdentity
-    version="7.6.0"
-    processorArchitecture="x86"
+    version="7.6.0.0"
+    processorArchitecture="amd64"
     name="FlashFinder"
-    type="win64"
+    type="win32"
   />
   <description>Python File Manager</description>
   <dependency>
