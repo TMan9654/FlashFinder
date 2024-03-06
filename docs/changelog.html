@@ -36,6 +36,122 @@
     </style>
 </head>
 <body>
+<!-- TO DO:
+    Bug fixes:
+    
+    QThread: Destroyed while thread is still running
+    QFileSystemWatcher: FindNextChangeNotification failed for "C:\Users\tburns\Desktop\Maxfield\JOBS\NVIS Approvals\31957"  (Access is denied.)
+    
+
+    qt.gui.imageio: libpng warning: iCCP: profile 'ICC Profile': 'CMYK': invalid ICC profile color space
+    Make use of the tree view and allow for creating sub items based on selection in the main view
+    Shortcut properties
+    Template directories
+    Fix preview resizing (undocked it wants to move to be its original right edge location)
+    Fix caching status updates (revert back to original status)
+    Add support for shortcut/symlink naming
+    Add setting to exclude paths for indexing
+    Add auto renaming
+    Add renaming based on content
+    Add folder syncing
+    Add maximising for undocked windows
+    Add parse time alongside search time
+    Add include folders in search setting
+    Add option when opening a new tab to change to it
+    symbolic links
+    Make changelog's per version
+    Add description of copy types to documentation + new names
+    Make settings dialog non blocking?
+    Add date created column?
+    Add collapse/expand level hotkeys
+    Add collapse/expand all hotkey
+    Make operation dialogs non blocking
+    Add operations progress window for longer processes
+    Add all operations to a thread
+    Make tabs undockable
+    Make settings files into 1 file
+    Add images to documentation
+    Make tabs start with current dir as name
+    Upgrade documentation, add links to docs in changelog where necessary
+    Add a "Task Manager" for flashfinder showing things like the indexer status, app usage, etc
+    Change status to app status rather then indexer status
+    Statistics
+    Add reload tabs on open setting
+    Add more error messages (move, paste, etc) to capture things like file in use
+    Make undo per tab
+    Add windows shortcuts (move window, etc)
+    Add print command to context menu
+    Taskbar loading bar
+    Ability to change view types (dual pane, etc)
+    Open With (Consigno?)
+    Process Manager (Admin Controls)
+    Logging
+    Filtering
+    Macro Commands
+    Add 3d model viewing support, add support for excel, add support to preview folder structure, videos, etc
+    Audio File preview?
+    Pinned item icons
+    Polish the GUI
+    File sharing
+    Notifications
+    File Conversion Operations
+    Properties window enhancements (attributes, previous versions, etc)
+    Fix search results header (end area)
+    Quick references (shortcuts, engineering related?) (add to settings?)
+    File Versioning
+    Color coding / Tagging
+    Smart Tagging (Tagging based on content)
+    Text File Comparison
+    Batch Operations?
+    Virtual Folders
+    Integrated text editor / image editor
+    Customizable UI / Custom Themes
+    Integrated Terminal / IDE
+    Duplicate File Finder
+    File / Folder Locking
+    Customizable Shortcuts
+    Backup / Restore
+    History dropdown on back/forward buttons
+    Disk Usage Analyzer
+    File Content Searching
+    Redo
+    Navigate ZIP files
+    Directory Visualizer
+    Password Manager?
+    File hashing tool?
+    Cross Device File Transfer
+    Integrated Note Taking
+    QR Code Generator
+    Look at more advanced clipboard?
+    On hover file details
+    Multidimensional sorting (multiple sort filters)
+    Custom file icons (user customizable as well)
+    Location based customizations?
+    Smart folders
+    Commenting / Notes for files and folders
+    Conversion tools
+    Tooltips
+    System cleanup tool
+    Network activity?
+    Workflow automation (Think IFTTT style where an action can trigger a series of automated actions)
+    Ephemeral File Sharing (Create temporary, self-destructing links for sharing files, enhancing security)
+    File relationship mapping
+    Workspaces
+    File analytics (how many times accessed, modification history, etc)
+    Automatic archiving / deleting after certain amount of time
+    System monitor (cpu, gpu, ram, etc)
+
+LONG TERM DEVELOPMENT FEATURES:
+    Update to PyQt6
+    Rework app, nicer code, optimize functions, use C++ extensions, etc
+    Machine learning
+    Collaborative features (Chat, shared folders, real time collaboration in files, etc)
+    BOM Viewer
+    Material Database / Component Library (goes along with reference material)
+    CAD tools (compare files, viewer, converter, etc)
+    PDM Integration
+    AI Assistant
+-->
     <h1>Changelog</h1>
 
     <h3>VERSION 7.6.0</h3>
@@ -60,7 +176,7 @@
         <p>Files now have the options "Browse to in new tab" and "Browse in new tab". Browsing to is more reliable overall.</p>
 
         <li>Added the ability to exclude indexer paths.</li>
-        <p>Added the option for excluding indexer paths under the search settings. (Will not show up in searhces)</p>
+        <p>Added the option for excluding indexer paths under the search settings. (Will not show up in searches)</p>
 
         <li>Added "Duplicate Tab" action to the context menu.</li>
         <p>Added the option to duplicate the current tab in the context menu.</p>
@@ -72,7 +188,7 @@
         <p>The "Temp" folder now gets purged on close to avoid large temp files (used for the undo function).</p>
 
         <li>Fixed bug in the AUTO page resizing in the compare feature.</li>
-        <p>Fixed a bug in the compre feature when using the AUTO page size. Pages with different DPI levels are now accounted for.</p>
+        <p>Fixed a bug in the compare feature when using the AUTO page size. Pages with different DPI levels are now accounted for.</p>
 
         <li>Fixed a bug in the compare feature using scale pages.</li>
         <p>When using scale pages on different DPI levels, an unexpected memory usage could occur causing a crash.</p>
@@ -98,13 +214,13 @@
         <p>Fixed a bug where when a user moves a file while previewing it, FlashFinder would crash.</p>
         
         <li>Fixed a bug where tabs could be the same name.</li>
-        <p>Fixed a bug where tabs could have the same name causing interal referencing to fail when using the "Browse to in new tab" function.</p>
+        <p>Fixed a bug where tabs could have the same name causing internal referencing to fail when using the "Browse to in new tab" function.</p>
 
         <li>Fixed a bug in the preview window cauing a crash if no file is selected.</li>
-        <p>Fixed a bug where if the preview was open and a file was not selected, FlashFinder would attempt to fetch file info casuing a crash.</p>
+        <p>Fixed a bug where if the preview was open and a file was not selected, FlashFinder would attempt to fetch file info causing a crash.</p>
     
         <li>Fixed a bug where occasionally FlashFinder would crash after cancelling a search.</li>
-        <p>Fixed a bug where if a user cancelled a search, FlashFinder would occasionally fail to stop the previos thread and cause a memory race condition resulting in a crash.</p>
+        <p>Fixed a bug where if a user cancelled a search, FlashFinder would occasionally fail to stop the previous thread and cause a memory race condition resulting in a crash.</p>
     
         <li>Added error handling for retrieving file owners.</li>
         <p>Added error handling when FlashFinder cannot access file owner data, usually when user doesnt have necessary file permissions.</p>
