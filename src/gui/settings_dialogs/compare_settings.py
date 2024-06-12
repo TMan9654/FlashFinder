@@ -1,8 +1,7 @@
 
-from ...config.config import SETTINGS_PATH, COMPUTERNAME
+from ...utils.utils import load_settings, save_settings
 
 from os import path
-from json import dump, load
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QLabel, QComboBox, QLineEdit, QCheckBox, QGroupBox, QFormLayout, QHBoxLayout, \
     QVBoxLayout
@@ -11,8 +10,7 @@ from PySide6.QtWidgets import QWidget, QLabel, QComboBox, QLineEdit, QCheckBox, 
 class CompareSettings(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.compare_settings_path = path.join(SETTINGS_PATH, f"{COMPUTERNAME}_compare-settings.json")
-        self.compare_settings = self.load_settings()
+        self.compare_settings = load_settings("compare")
         self.PAGE_SIZES = self.compare_settings.get("PAGE_SIZES")
         self.DPI_LEVELS = self.compare_settings.get("DPI_LEVELS")
         self.DPI_LABELS = self.compare_settings.get("DPI_LABELS")
@@ -204,95 +202,17 @@ class CompareSettings(QWidget):
                 background-color: #f0f0f0;
             }
         """)
-        
-    def load_settings(self) -> dict:
-        default_settings = {
-                "PAGE_SIZES": {
-                    "AUTO": [None, None],
-                    "LETTER": [8.5, 11],
-                    "ANSI A": [11, 8.5],
-                    "ANSI B": [17, 11],
-                    "ANSI C": [22, 17],
-                    "ANSI D": [34, 22]
-                },
-                "DPI_LEVELS": [75, 150, 300, 600, 1200, 1800],
-                "DPI_LABELS": [
-                    "Low DPI: Draft Quality [75]",
-                    "Low DPI: Viewing Only [150]",
-                    "Medium DPI: Printable [300]",
-                    "Standard DPI [600]",
-                    "High DPI [1200]: Professional Quality",
-                    "Max DPI [1800]: Large File Size"
-                ],
-                "INCLUDE_IMAGES": {"New Copy": False, "Old Copy": False, "Markup": False, "Difference": True, "Overlay": True},
-                "DPI": "Medium DPI: Printable [300]",
-                "DPI_LEVEL": 300,
-                "PAGE_NAME": "ANSI B",
-                "THRESHOLD": 128,
-                "MIN_AREA": 100,
-                "EPSILON": 0.0,
-                "OUTPUT_PATH": None,
-                "SCALE_OUTPUT": True,
-                "OUTPUT_BW": False,
-                "OUTPUT_GS": False,
-                "REDUCE_FILESIZE": True,
-                "MAIN_PAGE": "New Document"
-            }
-
-        if path.exists(self.compare_settings_path):
-            with open(self.compare_settings_path, "r") as f:
-                compare_settings = load(f)
-            updated = False
-            for key, value in default_settings.items():
-                if key not in compare_settings:
-                    compare_settings[key] = value
-                    updated = True
-
-            if updated:
-                with open(self.compare_settings_path, "w") as f:
-                    dump(compare_settings, f, indent=4)
-        else:
-            compare_settings = default_settings
-            with open(self.compare_settings_path, "w") as f:
-                dump(compare_settings, f, indent=4)
-
-        return compare_settings
-            
-    def save_settings(self):
-        self.compare_settings = {
-            "PAGE_SIZES": self.PAGE_SIZES,
-            "DPI_LEVELS": self.DPI_LEVELS,
-            "DPI_LABELS": self.DPI_LABELS,
-            "INCLUDE_IMAGES": self.INCLUDE_IMAGES,
-            "DPI": self.DPI,
-            "DPI_LEVEL": self.DPI_LEVEL,
-            "PAGE_NAME": self.PAGE_NAME,
-            "THRESHOLD": self.THRESHOLD,
-            "MIN_AREA": self.MIN_AREA,
-            "EPSILON": self.EPSILON,
-            "OUTPUT_PATH": self.OUTPUT_PATH,
-            "SCALE_OUTPUT": self.SCALE_OUTPUT,
-            "OUTPUT_BW": self.OUTPUT_BW,
-            "OUTPUT_GS": self.OUTPUT_GS,
-            "REDUCE_FILESIZE": self.REDUCE_FILESIZE,
-            "MAIN_PAGE": self.MAIN_PAGE
-        }
-        try:
-            with open(self.compare_settings_path, "w") as f:
-                dump(self.compare_settings, f, indent=4)
-        except PermissionError:
-            self.save_settings()
             
     def set_dpi_level(self, DPI: str):
         if DPI != "":
             self.DPI = DPI
             self.DPI_LEVEL = self.DPI_LEVELS[self.DPI_LABELS.index(DPI)]
-        self.save_settings()
+        save_settings("compare", self.compare_settings)
     
     def set_page_size(self, page_size: str):
         self.PAGE_NAME = page_size
         self.PAGE_SIZE = self.PAGE_SIZES[page_size]
-        self.save_settings()
+        save_settings("compare", self.compare_settings)
 
     def set_output_path(self, option: str):
         if option == "Source Path":
@@ -303,7 +223,7 @@ class CompareSettings(QWidget):
             self.OUTPUT_PATH = self.specified_entry.text()
             self.OUTPUT_PATH.replace("\\", "\\\\")
             self.OUTPUT_PATH += "\\"
-        self.save_settings()
+        save_settings("compare", self.compare_settings)
 
     def set_output_images(self, state: int):
         checkbox = self.sender()
@@ -311,36 +231,36 @@ class CompareSettings(QWidget):
             self.INCLUDE_IMAGES[checkbox.text()] = True
         else:
             self.INCLUDE_IMAGES[checkbox.text()] = False
-        self.save_settings()
+        save_settings("compare", self.compare_settings)
     
     def set_scaling(self, state: int):
         if state == 2:
             self.SCALE_OUTPUT = True
         else:
             self.SCALE_OUTPUT = False
-        self.save_settings()
+        save_settings("compare", self.compare_settings)
                     
     def set_bw(self, state: int):
         if state == 2:
             self.OUTPUT_BW = True
         else:
             self.OUTPUT_BW = False
-        self.save_settings()
+        save_settings("compare", self.compare_settings)
                     
     def set_gs(self, state: int):
         if state == 2:
             self.OUTPUT_GS = True
         else:
             self.OUTPUT_GS = False
-        self.save_settings()
+        save_settings("compare", self.compare_settings)
     
     def set_reduced_filesize(self, state: int):
         if state == 2:
             self.REDUCE_FILESIZE = True
         else:
             self.REDUCE_FILESIZE = False
-        self.save_settings()
+        save_settings("compare", self.compare_settings)
                     
     def set_main_page(self, page: str):
         self.MAIN_PAGE = page
-        self.save_settings()
+        save_settings("compare", self.compare_settings)

@@ -36,123 +36,60 @@
     </style>
 </head>
 <body>
-<!-- TO DO:
-    Bug fixes:
-    
-    QThread: Destroyed while thread is still running
-    QFileSystemWatcher: FindNextChangeNotification failed for "C:\Users\tburns\Desktop\Maxfield\JOBS\NVIS Approvals\31957"  (Access is denied.)
-    
-
-    qt.gui.imageio: libpng warning: iCCP: profile 'ICC Profile': 'CMYK': invalid ICC profile color space
-    Make use of the tree view and allow for creating sub items based on selection in the main view
-    Shortcut properties
-    Template directories
-    Fix preview resizing (undocked it wants to move to be its original right edge location)
-    Fix caching status updates (revert back to original status)
-    Add support for shortcut/symlink naming
-    Add setting to exclude paths for indexing
-    Add auto renaming
-    Add renaming based on content
-    Add folder syncing
-    Add maximising for undocked windows
-    Add parse time alongside search time
-    Add include folders in search setting
-    Add option when opening a new tab to change to it
-    symbolic links
-    Make changelog's per version
-    Add description of copy types to documentation + new names
-    Make settings dialog non blocking?
-    Add date created column?
-    Add collapse/expand level hotkeys
-    Add collapse/expand all hotkey
-    Make operation dialogs non blocking
-    Add operations progress window for longer processes
-    Add all operations to a thread
-    Make tabs undockable
-    Make settings files into 1 file
-    Add images to documentation
-    Make tabs start with current dir as name
-    Upgrade documentation, add links to docs in changelog where necessary
-    Add a "Task Manager" for flashfinder showing things like the indexer status, app usage, etc
-    Change status to app status rather then indexer status
-    Statistics
-    Add reload tabs on open setting
-    Add more error messages (move, paste, etc) to capture things like file in use
-    Make undo per tab
-    Add windows shortcuts (move window, etc)
-    Add print command to context menu
-    Taskbar loading bar
-    Ability to change view types (dual pane, etc)
-    Open With (Consigno?)
-    Process Manager (Admin Controls)
-    Logging
-    Filtering
-    Macro Commands
-    Add 3d model viewing support, add support for excel, add support to preview folder structure, videos, etc
-    Audio File preview?
-    Pinned item icons
-    Polish the GUI
-    File sharing
-    Notifications
-    File Conversion Operations
-    Properties window enhancements (attributes, previous versions, etc)
-    Fix search results header (end area)
-    Quick references (shortcuts, engineering related?) (add to settings?)
-    File Versioning
-    Color coding / Tagging
-    Smart Tagging (Tagging based on content)
-    Text File Comparison
-    Batch Operations?
-    Virtual Folders
-    Integrated text editor / image editor
-    Customizable UI / Custom Themes
-    Integrated Terminal / IDE
-    Duplicate File Finder
-    File / Folder Locking
-    Customizable Shortcuts
-    Backup / Restore
-    History dropdown on back/forward buttons
-    Disk Usage Analyzer
-    File Content Searching
-    Redo
-    Navigate ZIP files
-    Directory Visualizer
-    Password Manager?
-    File hashing tool?
-    Cross Device File Transfer
-    Integrated Note Taking
-    QR Code Generator
-    Look at more advanced clipboard?
-    On hover file details
-    Multidimensional sorting (multiple sort filters)
-    Custom file icons (user customizable as well)
-    Location based customizations?
-    Smart folders
-    Commenting / Notes for files and folders
-    Conversion tools
-    Tooltips
-    System cleanup tool
-    Network activity?
-    Workflow automation (Think IFTTT style where an action can trigger a series of automated actions)
-    Ephemeral File Sharing (Create temporary, self-destructing links for sharing files, enhancing security)
-    File relationship mapping
-    Workspaces
-    File analytics (how many times accessed, modification history, etc)
-    Automatic archiving / deleting after certain amount of time
-    System monitor (cpu, gpu, ram, etc)
-
-LONG TERM DEVELOPMENT FEATURES:
-    Update to PyQt6
-    Rework app, nicer code, optimize functions, use C++ extensions, etc
-    Machine learning
-    Collaborative features (Chat, shared folders, real time collaboration in files, etc)
-    BOM Viewer
-    Material Database / Component Library (goes along with reference material)
-    CAD tools (compare files, viewer, converter, etc)
-    PDM Integration
-    AI Assistant
--->
     <h1>Changelog</h1>
+
+    <h3>VERSION 7.6.2</h3>
+    <ol>
+        <li>Fixed bug that didnt allow users to delete files.</li>
+        <p>Fixed bug introduced in recent major update that would not allow users to delete files.</p>
+
+        <li>Added support for bulk file extraction.</li>
+        <p>Extraction now supports multiple zip files occurring on a separate thread</p>
+
+        <li>Fixed bug in loading settings.</li>
+        <p>Fixed a bug introduced in the recent major update when loading settings if the settings file didnt exist.</p>
+
+        <li>Fixed a bug in file indexer loading excluded paths.</li>
+        <p>Fixed a bug where the file indexer would not properly read the exclude paths upon updating with defaults.</p>
+
+        <li>Fixed bug in preview window casuing it to stutter and shift when resizing.</li>
+        <p>Fixed a bug in the preview window causing the window to stutter on resizing as well as when un docked, would be unable to be past the right edge of the main window.</p>
+    
+        <li>Indexer process is now a daemon process ensuring complete and immediate shutdown.</li>
+        <p>Indexer process is now a daemon process that ensures the indexer process will complete and immediate shutdown. Cleanup has moved to main process.</p>
+    
+        <li>Fixed bug in saving settings.</li>
+        <p>Fixed a bug where the settings would save properly from a silent error.</p>
+
+        <li>Fixed delete function.</li>
+        <p>Fixed a bug where the delete function would not work properly and files wouldnt be deleted.</p>
+    
+        <li>Added the ability to resize the search bar and address bar.</li>
+        <p>Added the ability to resize the search bar and address bar as well as adjusted initial sizing for a better user experience.</p>
+    </ol>
+
+    <h3>VERSION 7.6.1 (Hotfix)</h3>
+    <ol>
+        
+        <li>Fixed bug where users couldnt open the search results.</li>
+        <p>Fixed a bug where users couldnt open files from the search results.</p>
+
+        <li>Fixed bug where the context menu wouldnt show on the search results.</li>
+        <p>Fixed a bug where the context menu wouldn't show due to the V7.6.0 codebase overhaul.</p>
+
+        <li>Fixed A few spelling errors across FlashFinder.</li>
+        <p>Addresses several spelling errors across FlashFinder including the changelog.</p>
+
+        <li>Fixed a bug in the search history saving.</li>
+        <p>Fixed a bug in the search history when checking comparing the timestamp to the set lifetime.</p>
+
+        <li>Fixed a bug in the "Relink" function for the pinned menu.</li>
+        <p>Fixed the "Relink" function when relinking folder due to the dialog not allowing you to select a path rather only open them.</p>
+    
+        <li>Fixed a bug in the "Browse to in new tab function"</li>
+        <p>Fixed a bug in the "Browse to in new tab" function in the search results window introduced in V7.6.0</p>
+    
+    </ol>
 
     <h3>VERSION 7.6.0</h3>
     <ol>

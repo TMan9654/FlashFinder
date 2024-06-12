@@ -31,4 +31,4 @@ def launch_flashfinder():
         error_dialog.setWindowTitle("Error")
         error_dialog.exec_()
     finally:
-        explorer.indexer.stop()
+        explorer.indexer.terminate()

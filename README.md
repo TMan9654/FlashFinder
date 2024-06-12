@@ -35,4 +35,4 @@ Contributions to FlashFinder are welcome! If you'd like to contribute, please fo
 
 ## License
 
-FlashFinder is open-source software licensed under the GPL-3.0 License. See the LICENSE file for more details.
+FlashFinder is open-source software licensed under the MIT License. See the LICENSE file for more details.

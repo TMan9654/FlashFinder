@@ -1,16 +1,13 @@
 
-from ...config.config import SETTINGS_PATH, COMPUTERNAME
+from ...utils.utils import load_settings, save_settings
 
-from os import path
-from json import load, dump
 from PySide6.QtWidgets import QWidget, QGroupBox, QLabel, QCheckBox, QComboBox, QVBoxLayout, QFormLayout
 
 
 class GeneralSettings(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.general_settings_path = path.join(SETTINGS_PATH, f"{COMPUTERNAME}_general-settings.json")
-        self.general_settings = self.load_settings()
+        self.general_settings = load_settings("general")
         self.RELOAD_MAIN_TAB = self.general_settings.get("RELOAD_MAIN_TAB")
         self.SCROLL_TO = self.general_settings.get("SCROLL_TO")
         self.EXTERNAL_DROP_MODE = self.general_settings.get("EXTERNAL_DROP_MODE")
@@ -99,53 +96,16 @@ class GeneralSettings(QWidget):
             self.RELOAD_MAIN_TAB = True
         else:
             self.RELOAD_MAIN_TAB = False
-        self.save_settings()
+        save_settings("general", self.general_settings)
         
     def set_drop_mode(self, mode: str):
         self.EXTERNAL_DROP_MODE = mode
-        self.save_settings()
+        save_settings("general", self.general_settings)
     
     def scroll_to(self, state: int):
         if state == 2:
             self.SCROLL_TO = True
         else:
             self.SCROLL_TO = False
-        self.save_settings()
+        save_settings("general", self.general_settings)
        
-    def save_settings(self):
-        self.general_settings = {
-            "RELOAD_MAIN_TAB": self.RELOAD_MAIN_TAB,
-            "SCROLL_TO": self.SCROLL_TO,
-            "EXTERNAL_DROP_MODE": self.EXTERNAL_DROP_MODE
-        }
-        try:
-            with open(self.general_settings_path, "w") as f:
-                dump(self.general_settings, f, indent=4)
-        except PermissionError:
-            self.save_settings()
-    
-    def load_settings(self) -> dict:
-        default_settings = {
-            "RELOAD_MAIN_TAB": False,
-            "SCROLL_TO": False,
-            "EXTERNAL_DROP_MODE": "Paste"
-        }
-
-        if path.exists(self.general_settings_path):
-            with open(self.general_settings_path, "r") as f:
-                general_settings = load(f)
-            updated = False
-            for key, value in default_settings.items():
-                if key not in general_settings:
-                    general_settings[key] = value
-                    updated = True
-
-            if updated:
-                with open(self.general_settings_path, "w") as f:
-                    dump(general_settings, f, indent=4)
-        else:
-            general_settings = default_settings
-            with open(self.general_settings_path, "w") as f:
-                dump(general_settings, f, indent=4)
-
-        return general_settings

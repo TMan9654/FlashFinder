@@ -1,10 +1,11 @@
 
-from fitz import open as fopen
+import fitz
 from PySide6.QtCore import QByteArray, QEvent, Qt
 from PySide6.QtGui import QPainter, QPixmap
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtSvgWidgets import QGraphicsSvgItem
 from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QMessageBox, QGraphicsTextItem, QApplication
+
 
 class PreviewWindow(QGraphicsView):
 
@@ -47,7 +48,9 @@ class PreviewWindow(QGraphicsView):
                     self._add_text_to_scene("Unable to preview this file.")
 
             elif lower_path.endswith(".pdf"):
-                self._load_pdf(file_path)
+                self._add_text_to_scene("PDF preview is temporarily disabled.")
+                # Disabled: crashes program, gives no error.
+                # self._load_pdf(file_path)
 
             elif lower_path.endswith((".txt", ".py", ".pyw", ".js", ".html", ".cpp", ".c", ".rs")):
                 self._load_text_file(file_path)
@@ -59,20 +62,17 @@ class PreviewWindow(QGraphicsView):
         self._adjust_view()
         self.explorer.update_details_bar()
 
-    def _load_pdf(self, file_path: str):
+    def _load_pdf(self, file_path: str) -> None:
         try:
-            with fopen(file_path) as pdf_document:
+            with fitz.open(file_path) as pdf_document:
                 self.page_count = pdf_document.page_count
                 if self.current_page >= self.page_count:
                     self.current_page = 0
-
                 page = pdf_document.load_page(self.current_page)
-                
                 svg = page.get_svg_image()
                 svg_item = QGraphicsSvgItem()
-                svg_item.setSharedRenderer(QSvgRenderer(QByteArray(svg.encode("utf-8"))))
+                svg_item.setSharedRenderer(QSvgRenderer(QByteArray(svg.encode())))
                 self.preview_scene.addItem(svg_item)
-
         except Exception as e:
             QMessageBox.critical(self, "File Read Error", f"There was an error reading the file for previewing: {e}")
 

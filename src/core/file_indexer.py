@@ -1,38 +1,28 @@
-from ..config.config import INDEXES_PATH, SETTINGS_PATH, COMPUTERNAME
+from ..config.config import INDEXES_PATH, COMPUTERNAME, SETTINGS_PATH
+from ..utils.utils import load_settings
 
 from time import sleep, time
-from os import path, remove, walk
+from json import load, dump
+from os import path, remove, walk, environ
 from pickle import dump as pdump
-from multiprocessing import Value, Process
 from win32file import GetDriveType, DRIVE_REMOTE
 from win32api import GetLogicalDriveStrings
 from filelock import FileLock, Timeout
 from datetime import datetime
-from json import load as jload
+from multiprocessing import Process
 
 class FileIndexer(Process):
     def __init__(self):
         super(FileIndexer, self).__init__()
         self.rebuild_signal_path = path.join(INDEXES_PATH, "rebuild_signal")
-        self.parent_isalive_path = path.join(INDEXES_PATH, f"{COMPUTERNAME}_is_alive")
         self.excluded_paths = self.load_exclude_paths()
-        self.exit_flag = Value('i', 0)
         self.counter = 0
         self.local_lock = None
         self.num_rebuilt = 0
         self.previous_status = None
         
-    def stop(self):
-        """"Gracfully stops the file indexer process."""
-        with self.exit_flag.get_lock():
-            self.exit_flag.value = 1
-        self.join()
-        self.run()
-        if path.exists(path.join(INDEXES_PATH, f"{COMPUTERNAME}_indexer_running")):
-            remove(path.join(INDEXES_PATH, f"{COMPUTERNAME}_indexer_running"))
-
     def _claim_network_drive(self, drive: str) -> FileLock:
-        """Aquires the network file index lock."""
+        """Acquires the network file index lock."""
         lock_file = path.join(INDEXES_PATH, f"Drive_{drive}_Claimed.lock")
         lock = FileLock(lock_file, timeout=0.5)
         try:
@@ -47,7 +37,7 @@ class FileIndexer(Process):
             lock.release()
 
     def _claim_local_indexing(self) -> FileLock:
-        """Aquires the local file indexing lock."""
+        """Acquires the local file indexing lock."""
         lock_file = path.join(INDEXES_PATH, f"{COMPUTERNAME}_Local_Indexing_Claimed.lock")
         lock = FileLock(lock_file, timeout=0.5)
         sleep(2)
@@ -67,12 +57,9 @@ class FileIndexer(Process):
         self.local_lock = self._claim_local_indexing()
         network_lock = None
         try:
-            while not self.exit_flag.value:
+            while True:
                 active_drives = self._get_active_drives()
                 for drive in active_drives:
-                    self._check_parent()
-                    if self.exit_flag.value:
-                        break
                     if self._is_network_drive(drive):
                         network_lock = self._claim_network_drive(drive)
                         if network_lock and self._check_index(drive, len(active_drives)):
@@ -99,21 +86,6 @@ class FileIndexer(Process):
                 sleep(1)
                 self._remove_indexer_running_file()
                 
-    def _check_parent(self):
-        """Checks to see if the parent process is still alive and peacefully ends the indexer process if it does not."""
-        if path.exists(self.parent_isalive_path):
-            sleep(1)
-            if path.exists(self.parent_isalive_path):
-                remove(self.parent_isalive_path)
-        else:
-            if self.counter > 3:
-                with self.exit_flag.get_lock():
-                    self.exit_flag.value = 1
-                self.counter = 0
-            self.counter += 1
-            sleep(5)
-            self._check_parent()
-
     def _is_network_drive(self, drive: str) -> bool:
         """Returns a boolean value indicating whether the drive path is a network drive."""
         drive_type = GetDriveType(f"{drive}:\\")
@@ -145,7 +117,7 @@ class FileIndexer(Process):
             return True
         return False
     
-    def _rebuilt(self):
+    def _rebuilt(self) -> None:
         """Removes the rebuild signal file indicating all indexes have been rebuilt."""
         if path.exists(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_rebuild")):
             remove(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_rebuild"))
@@ -174,11 +146,7 @@ class FileIndexer(Process):
         self._update_status(f"Indexing {drive_path}...")
         for root, dirs, files in walk(drive_path):
             dirs[:] = [d for d in dirs if d not in self.excluded_paths]
-            if self.exit_flag.value:
-                return
             for name in files + dirs:
-                if self.exit_flag.value:
-                    return
                 full_path = path.join(root, name)
                 if path.isdir(full_path):
                     file_type, file_ext = "File Folder", None
@@ -187,14 +155,20 @@ class FileIndexer(Process):
                     file_type = file_ext + " File"
                 if path.exists(full_path):
                     try:
-                        creation_date = datetime.fromtimestamp(path.getctime(full_path)).strftime("%Y/%m/%d %I:%M %p")
+                        creation_date = datetime.fromtimestamp(path.getctime(full_path)).strftime("%d/%m/%Y %I:%M %p")
                     except:
                         creation_date = "ERROR"
                     try:
-                        modification_date = datetime.fromtimestamp(path.getmtime(full_path)).strftime("%Y/%m/%d %I:%M %p")
+                        modification_date = datetime.fromtimestamp(path.getmtime(full_path)).strftime("%d/%m/%Y %I:%M %p")
                     except:
                         modification_date = "ERROR"                    
-                    indexed_files[full_path] = (name + file_ext if file_ext else name, name.lower() + file_ext.lower() if file_ext else name.lower(), file_type, file_ext.lower() if file_ext else file_ext, creation_date, modification_date)
+                    indexed_files[full_path] = (
+                        name + file_ext if file_ext else name, 
+                        name.lower() + file_ext.lower() if file_ext else name.lower(), 
+                        file_type, file_ext.lower() if file_ext else file_ext, 
+                        creation_date, 
+                        modification_date
+                    )
         metadata = {
             "TOTAL_INDEXED": len(indexed_files)
         }
@@ -226,13 +200,7 @@ class FileIndexer(Process):
                 
     def load_exclude_paths(self) -> list:
         """Returns a list paths for the indexer to exclude from indexing. Loaded from the settings file."""
-        search_settings_path = path.join(SETTINGS_PATH, f"{COMPUTERNAME}_search-settings.json")
-        default_paths = ["$Recycle.Bin", "$RECYCLE.BIN", "System Volume Information", "Windows", "Program Files", "Program Files (x86)", "ProgramData", "Recovery"]
-        excluded_paths = default_paths
-        if path.exists(search_settings_path):
-            with open(search_settings_path, "r") as f:
-                search_settings = jload(f)
-                if "EXCLUDE_PATHS" in search_settings:
-                    excluded_paths = search_settings["EXCLUDE_PATHS"]
+        search_settings = load_settings("search")
+        if "EXCLUDE_PATHS" in search_settings:
+            excluded_paths = search_settings["EXCLUDE_PATHS"]
         return excluded_paths
-    

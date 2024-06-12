@@ -1,11 +1,12 @@
 
-from ..config.config import COMPUTERNAME, INDEXES_PATH, SETTINGS_PATH
+from ..config.config import COMPUTERNAME, INDEXES_PATH
+from ..utils.utils import load_settings
 
 from re import compile, search, IGNORECASE
 from time import time, ctime
 from os import path, listdir, walk
 from pickle import load as pload
-from json import load as jload
+from datetime import datetime, timedelta
 from win32api import GetLogicalDriveStrings
 from PySide6.QtCore import QThread, Signal
 
@@ -16,15 +17,15 @@ class FileSearchThread(QThread):
     foundMatchingFile = Signal(dict)
     progressUpdated = Signal(int)
 
-    def __init__(self, search_text: str, current_address: str, index_count: int, index_cache: dict, mode: int = 0):
+    def __init__(self, search_text: str, current_address: str, index_count: int, index_cache: dict, search_all_drives: int = 0):
         super().__init__()
-        search_settings = self.load_settings()
+        search_settings = load_settings("search")
         self.INDEXED_SEARCH = search_settings.get("INDEXED_SEARCH")
         self.INCLUDE_SUBFOLDERS = search_settings.get("INCLUDE_SUBFOLDERS")
         self.SEARCH_PATTERN = False
         self.search_text = search_text.lower()
         self.current_address = current_address
-        self.mode = mode
+        self.search_all_drives = search_all_drives
         self.results_count = 0
         self.index_count = index_count
         self.index_cache = index_cache
@@ -54,13 +55,47 @@ class FileSearchThread(QThread):
 
     def stop(self) -> None:
         self.exit_flag = True
+        
+    def parse_date_or_duration(self, arg: str):
+        arg = arg.strip().lower()
+        
+        try:
+            # Try to parse as a date
+            return datetime.strptime(arg, "%d/%m/%Y %I:%M %p")
+        except ValueError:
+            pass
+        
+        # Parse as duration
+        duration_mapping = {
+            "second": "seconds",
+            "minute": "minutes",
+            "hour": "hours",
+            "day": "days",
+            "week": "weeks",
+            "month": "days",  # Approximation: one month is about 30 days
+            "year": "days"    # Approximation: one year is about 365 days
+        }
+        
+        amount, unit = arg.split()
+        amount = int(amount)
+        
+        if unit in duration_mapping.keys() or unit in duration_mapping.values():
+            if unit in duration_mapping.keys():
+                unit = duration_mapping[unit]
+            if unit == "days":
+                if "month" in arg:
+                    amount *= 30
+                elif "year" in arg:
+                    amount *= 365
+            return timedelta(**{unit: amount})
+        else:
+            raise ValueError(f"Invalid date or duration format: {arg}")
 
-    def check_commands(self, commands: str, name: str, file_type: str, index_path: str) -> bool:
+    def check_commands(self, commands: str, name: str, file_type: str, creation_date: str, modification_date: str, index_path: str) -> bool:
         for command, mode, args in commands:
             mode = mode or "all"
-    
             args_list = [arg.strip().lower() for arg in args.split(",")]
-            
+
             if self.INCLUDE_SUBFOLDERS:
                 contains_checks = [arg in name and self.current_address in index_path for arg in args_list]
                 equals_checks = [arg == name and self.current_address in index_path for arg in args_list]
@@ -69,33 +104,81 @@ class FileSearchThread(QThread):
                 contains_checks = [arg in name for arg in args_list]
                 equals_checks = [arg == name for arg in args_list]
                 type_checks = [(arg == file_type if "." not in file_type else arg == file_type.split(".")[-1]) if file_type else arg == "folder" for arg in args_list]
-    
+
             if command == "contains":
                 if (mode == "all" and not all(contains_checks)) or \
-                   (mode == "any" and not any(contains_checks)):
+                (mode == "any" and not any(contains_checks)):
                     return False
-    
+
             elif command == "!contain":
                 if any(contains_checks):
                     return False
-    
+
             elif command == "equals":
                 if (mode == "all" and not all(equals_checks)) or \
-                   (mode == "any" and not any(equals_checks)):
+                (mode == "any" and not any(equals_checks)):
                     return False
-    
+
             elif command == "!equal":
                 if any(equals_checks):
                     return False
-    
+
             elif command == "type":
                 if (mode == "all" and not all(type_checks)) or \
-                   (mode == "any" and not any(type_checks)):
+                (mode == "any" and not any(type_checks)):
                     return False
-    
+
             elif command == "!type":
                 if all(type_checks):
                     return False
+
+            elif command.startswith("creation") or command.startswith("modification"):
+                date_type, mode = command.split(":") if ":" in command else (command, "newer")
+                date_type = date_type.split("(")[0]
+                
+                if command.startswith("creation"):
+                    file_timestamp = datetime.strptime(creation_date, "%d/%m/%Y %I:%M %p")
+                else:
+                    file_timestamp = datetime.strptime(modification_date, "%d/%m/%Y %I:%M %p")
+                    
+                now = datetime.now()
+
+                if mode == "newer":
+                    arg = args_list[0]
+                    comparison_date = self.parse_date_or_duration(arg)
+                    if isinstance(comparison_date, timedelta):
+                        comparison_date = now - comparison_date
+                    if file_timestamp < comparison_date:
+                        return False
+
+                elif mode == "older":
+                    arg = args_list[0]
+                    comparison_date = self.parse_date_or_duration(arg)
+                    if isinstance(comparison_date, timedelta):
+                        comparison_date = now - comparison_date
+                    if file_timestamp >= comparison_date:
+                        return False
+
+                elif mode == "between":
+                    if len(args_list) == 1:
+                        start_date = self.parse_date_or_duration(args_list[0])
+                        end_date = now
+                    else:
+                        start_arg, end_arg = args_list
+                        start_date = self.parse_date_or_duration(start_arg)
+                        end_date = self.parse_date_or_duration(end_arg)
+                    
+                        if isinstance(start_date, timedelta):
+                            start_date = now - start_date
+                        if isinstance(end_date, timedelta):
+                            end_date = now - end_date
+                        
+                        if start_date > end_date:
+                            start_date, end_date = end_date, start_date
+
+                    if not (start_date <= file_timestamp <= end_date):
+                        return False
+
         return True
 
     def check_search_text(self, search_text: str, name: str, index_path: str) -> bool:
@@ -104,7 +187,7 @@ class FileSearchThread(QThread):
         else:
             is_match = search_text in name
             
-        if self.mode != 0 and self.INCLUDE_SUBFOLDERS and is_match:
+        if self.search_all_drives != 0 and self.INCLUDE_SUBFOLDERS and is_match:
             return self.current_address in index_path
         
         return is_match
@@ -118,7 +201,7 @@ class FileSearchThread(QThread):
         return last_emitted_progress
 
     def search_cache(self) -> bool:
-        if self.mode != 0 and not self.INCLUDE_SUBFOLDERS:
+        if self.search_all_drives != 0 and not self.INCLUDE_SUBFOLDERS:
             matches = self.search_current_path(self.command_pattern.findall(self.search_text))
             if matches:
                 self.foundMatchingFile.emit(matches)
@@ -140,7 +223,7 @@ class FileSearchThread(QThread):
                 if self.exit_flag:
                     return False
                 
-                is_match = self.check_commands(commands, name_lower, file_type_lower, index_path) if commands else self.check_search_text(self.search_text, name_lower, index_path)
+                is_match = self.check_commands(commands, name_lower, file_type_lower, creation_date, modification_date, index_path) if commands else self.check_search_text(self.search_text, name_lower, index_path)
                 
                 if is_match:
                     no_result = False
@@ -155,7 +238,7 @@ class FileSearchThread(QThread):
         return no_result
 
     def search_indexed(self) -> bool:
-        if self.mode != 0 and not self.INCLUDE_SUBFOLDERS:
+        if self.search_all_drives != 0 and not self.INCLUDE_SUBFOLDERS:
             matches = self.search_current_path(self.command_pattern.findall(self.search_text))
             if matches:
                 self.foundMatchingFile.emit(matches)
@@ -179,12 +262,12 @@ class FileSearchThread(QThread):
         for pklfile in pickle_files:
             with open(pklfile, "rb") as f:
                 file_index = pload(f)["index"]
-                for index_path, (name, name_lower, file_type, file_ext, creation_date, modification_date) in file_index.items():
+                for index_path, (name, name_lower, file_type, file_type_lower, creation_date, modification_date) in file_index.items():
                     if self.exit_flag:
                         self.foundMatchingFile.emit(matches)
                         return no_result
                     
-                    is_match = self.check_commands(commands, name_lower, file_ext, index_path) if commands else self.check_search_text(self.search_text, name_lower, index_path)
+                    is_match = self.check_commands(commands, name_lower, file_type_lower, creation_date, modification_date, index_path) if commands else self.check_search_text(self.search_text, name_lower, index_path)
                         
                     if is_match:
                         no_result = False
@@ -199,7 +282,7 @@ class FileSearchThread(QThread):
         return no_result
 
     def search_walk(self) -> bool:
-        if self.mode != 0 and not self.INCLUDE_SUBFOLDERS:
+        if self.search_all_drives != 0 and not self.INCLUDE_SUBFOLDERS:
             matches = self.search_current_path(self.command_pattern.findall(self.search_text))
             if matches:
                 self.foundMatchingFile.emit(matches)
@@ -227,7 +310,7 @@ class FileSearchThread(QThread):
                     name_lower = name.lower()
                     file_type_lower = file_type.lower()
 
-                    is_match = self.check_commands(commands, name_lower, file_type_lower, index_path) if commands else self.check_search_text(self.search_text, name_lower, index_path)
+                    is_match = self.check_commands(commands, name_lower, file_type_lower, creation_date, modification_date, index_path) if commands else self.check_search_text(self.search_text, name_lower, index_path)
                     
                     if is_match:
                         no_result = False
@@ -251,7 +334,7 @@ class FileSearchThread(QThread):
         for item in items:
             index_path = path.join(self.current_address, item)
             name, name_lower, file_type, file_type_lower, creation_date, modification_date = self.process_item(item, index_path)
-            is_match = self.check_commands(commands, name_lower+file_type_lower, file_type_lower, index_path) if commands else self.check_search_text(self.search_text, name_lower+file_type_lower, index_path)
+            is_match = self.check_commands(commands, name_lower, file_type_lower, creation_date, modification_date, index_path) if commands else self.check_search_text(self.search_text, name_lower, index_path)
             if is_match:
                 matches[index_path] = (name + file_type, file_type, creation_date, modification_date)
             processed_files += 1
@@ -283,15 +366,3 @@ class FileSearchThread(QThread):
         drives = GetLogicalDriveStrings()
         drives = drives.split("\000")[:-1]
         return [drive[0] for drive in drives]
-
-    def load_settings(self):
-        if path.exists(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_search-settings.json")):
-            with open(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_search-settings.json"), "r") as f:
-                search_settings = jload(f)
-        else:
-            search_settings = {
-                "INCLUDE_SUBFOLDERS": True,
-                "INDEXED_SEARCH": True
-            }
-        return search_settings
-

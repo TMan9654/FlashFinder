@@ -1,35 +1,31 @@
 
-from .config.config import INDEXES_PATH, ICONS_PATH, SETTINGS_PATH, TEMP_PATH, VERSION, \
-    IS_DARK, COMPUTERNAME, DESKTOP_PATH, DOCUMENTS_PATH, PICTURES_PATH, BASE_PATH
-from .utils.utils import load_settings
+from ..config.config import BASE_PATH, INDEXES_PATH, ICONS_PATH, SETTINGS_PATH, TEMP_PATH, VERSION, \
+    IS_DARK, COMPUTERNAME, DESKTOP_PATH, DOCUMENTS_PATH, PICTURES_PATH
 
-from .core.status_check_thread import StatusCheckThread
-from .core.file_operation_thread import FileOperationThread
-from .core.compare_thread import CompareThread
-from .core.file_search_thread import FileSearchThread
-from .core.file_indexer import FileIndexer
+from .status_check_thread import StatusCheckThread
+from .file_process_thread import FileProcessThread
+from .compare_thread import CompareThread
+from .file_search_thread import FileSearchThread
+from .file_indexer import FileIndexer
 
-from .gui.title_bar import TitleBar
-from .gui.tree_view import TreeView
-from .gui.tree_widget import TreeWidget
-from .gui.tab_widget import TabWidget
-from .gui.breadcrumbs_bar import BreadcrumbsBar
-from .gui.line_edit import LineEdit
-from .gui.item_delegate import ItemDelegate
-from .gui.dock_widget import DockWidget
-from .gui.preview_window import PreviewWindow
-from .gui.status_bar import StatusBar
-from .gui.file_replace_dialog import FileReplaceDialog
-from .gui.power_rename_dialog import PowerRenameDialog
-from .gui.settings_dialogs.settings import SettingsDialog
-from .gui.progress_window import ProgressWindow
-from .gui.advanced_search_window import AdvancedSearchWindow
+from ..gui.title_bar import TitleBar
+from ..gui.tree_view import TreeView
+from ..gui.tree_widget import TreeWidget
+from ..gui.tab_widget import TabWidget
+from ..gui.breadcrumbs_bar import BreadcrumbsBar
+from ..gui.line_edit import LineEdit
+from ..gui.item_delegate import ItemDelegate
+from ..gui.dock_widget import DockWidget
+from ..gui.preview_window import PreviewWindow
+from ..gui.status_bar import StatusBar
+from ..gui.file_replace_dialog import FileReplaceDialog
+from ..gui.power_rename_dialog import PowerRenameDialog
+from ..gui.settings_dialogs.settings import SettingsDialog
 
-from .models.file_system_model import FileSystemModel
+from ..models.file_system_model import FileSystemModel
 
-from .utils.utils import fix_coordinate
+from ..utils.utils import fix_coordinate
 
-from time import sleep
 from collections import OrderedDict
 from send2trash import send2trash
 from pythoncom import CoCreateInstance, CLSCTX_INPROC_SERVER, IID_IPersistFile
@@ -39,6 +35,7 @@ from win32file import GetDriveType, DRIVE_REMOTE
 from os import path, remove, walk, startfile, makedirs, listdir, rename, mkdir, rmdir
 from subprocess import Popen
 from json import load, dump
+from zipfile import ZipFile
 from ctypes import wintypes
 from time import time
 from shutil import move, copytree, copy2
@@ -48,7 +45,7 @@ from PySide6.QtGui import QResizeEvent, QKeySequence, QIcon, QPixmap, QGuiApplic
 from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QLabel, QPushButton, QMessageBox, QTreeWidget, \
     QTreeWidgetItem, QHeaderView, QFileDialog, QMenu, QSplitter, QAbstractItemView, QFileIconProvider, QProgressBar, \
         QFormLayout, QTabBar, QLineEdit, QDockWidget, QToolBar, QInputDialog, QStatusBar, QDialog, QWidget, QSizePolicy, \
-        QTreeView, QHBoxLayout
+        QTreeView
 
 
 class FlashFinder(QMainWindow):
@@ -74,11 +71,11 @@ class FlashFinder(QMainWindow):
         
         self.index_cache = {}
         self.indexer = FileIndexer()
-        self.indexer.daemon = True
+        self.indexer.start()
+        
         self.status_checker = StatusCheckThread(self)
         self.status_checker.statusChanged.connect(self.update_indexing_labels)
         self.status_checker.requestClose.connect(self.cleanup)
-        self.indexer.start()
         self.status_checker.start()
         
         self.initUI()
@@ -256,12 +253,6 @@ class FlashFinder(QMainWindow):
         self.search_progress_bar.setValue(0)
         self.search_progress_bar.setProperty("completed", False)
         
-        self.advanced_search_button = QPushButton("⋮", self)
-        self.advanced_search_button.setFixedSize(10, 28)
-        self.advanced_search_button.setToolTip("Advanced Search")
-        self.advanced_search_button.clicked.connect(self.show_advanced_search)
-        self.advanced_search_button.setObjectName("AdvancedSearchButton")
-        
         self.search_mode_button = QPushButton(self)
         self.search_mode_button.setIcon(self.search_mode_icon)
         self.search_mode_button.setFixedSize(28, 28)
@@ -272,23 +263,16 @@ class FlashFinder(QMainWindow):
         search_container = QWidget(self)
         search_layout = QVBoxLayout()
         search_container.setLayout(search_layout)
-    
+
         search_layout.addWidget(self.search_bar)
         search_layout.addWidget(self.search_progress_bar)
 
         search_layout.setSpacing(0)
         search_layout.setContentsMargins(0, 0, 0, 0)
         search_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
-        splitter = QSplitter(Qt.Orientation.Horizontal, self)
-        splitter.setFixedHeight(28)
-        splitter.addWidget(self.address_bar)
-        splitter.addWidget(search_container)
-        splitter.setStretchFactor(0, 4)
-        splitter.setStretchFactor(1, 1)
-        
-        self.toolbar.addWidget(splitter)
-        self.toolbar.addWidget(self.advanced_search_button)
+
+        self.toolbar.addWidget(self.address_bar)
+        self.toolbar.addWidget(search_container)
         self.toolbar.addWidget(self.search_mode_button)
         
         self.bottom_toolbar = QToolBar("Info Bar", self)
@@ -360,7 +344,7 @@ class FlashFinder(QMainWindow):
         self.index_count = self.status_checker.get_index_count()
         
         self.active_shortcuts()
-        self.update_indexing_labels("Idle", self.index_count)
+        self.update_indexing_labels("Idle", self.index_count, self.index_cache)
         self.populate_quick_access()
         self.apply_theme_stylesheet()
         self.show()
@@ -393,7 +377,7 @@ class FlashFinder(QMainWindow):
         self.rename_shortcut.activated.connect(lambda: self.rename_item(self.model.filePath(current_view.currentIndex())))
 
         self.delete_shortcut = QShortcut(QKeySequence("Del"), current_view)
-        self.delete_shortcut.activated.connect(lambda: self.trash_item(list(set(self.model.filePath(index) for index in current_view.selectedIndexes()))))
+        self.delete_shortcut.activated.connect(lambda: self.trash_item(set(self.model.filePath(index) for index in current_view.selectedIndexes())))
 
         self.new_file_shortcut = QShortcut(QKeySequence("Ctrl+N"), current_view)
         self.new_file_shortcut.activated.connect(self.create_new_file)
@@ -491,8 +475,6 @@ class FlashFinder(QMainWindow):
                 "#OpenSidebarButton { background-color: #202020; color: #F0F0F0;  font-size: 8.5pt; }"
                 "#SearchModeButton { background-color: #202020; color: #F0F0F0;  font-size: 8.5pt; border-radius: 5px; }"
                 "#SearchModeButton:hover { background-color: #283642; }"
-                "#AdvancedSearchButton { background-color: #202020; color: #F0F0F0;  font-size: 20pt; border-radius: 5px; }"
-                "#AdvancedSearchButton:hover { background-color: #283642; }"
                 "#FileCountLabel { color: #F0F0F0;  font-size: 8.5pt; padding-right: 10px; }"
                 "#IndexLabel { color: #F0F0F0;  font-size: 8.5pt; padding-right: 10px; }"
                 "#PreviewWindow { color: #F0F0F0;  font-size: 8.5pt; padding-right: 10px; }"
@@ -587,8 +569,6 @@ class FlashFinder(QMainWindow):
                 "#OpenSidebarButton { background-color: #EFEFEF; color: #333; font-size: 8.5pt; }"
                 "#SearchModeButton { background-color: #D9D9D9; color: #333; font-size: 8.5pt; border: none; border-radius: 5px; }"
                 "#SearchModeButton:hover { background-color: #E1EFFB; }"
-                "#AdvancedSearchButton { background-color: #D9D9D9; color: #333; font-size: 8.5pt; border: none; border-radius: 5px; }"
-                "#AdvancedSearchButton:hover { background-color: #E1EFFB; }"
                 "#FileCountLabel, #IndexLabel, #PreviewLabel, #StatusLabel, #SearchInfoLabel { color: #333; font-size: 8.5pt; padding-right: 10px; }"
                 "QStatusBar { background-color: transparent; border-bottom: 1px solid #D9D9D9; }"
                 "#AccessButton { background-color: transparent; color: #333; font-size: 8.5pt; border: none; border-radius: 5px; }"
@@ -695,13 +675,10 @@ class FlashFinder(QMainWindow):
     def cleanup(self):
         self.close()
         self.status_checker.terminate()
-        self.indexer.terminate()
-        sleep(5)
-        if path.exists(path.join(INDEXES_PATH, f"{COMPUTERNAME}_indexer_running")):
-            remove(path.join(INDEXES_PATH, f"{COMPUTERNAME}_indexer_running"))
-        if path.exists(path.join(INDEXES_PATH, f"{COMPUTERNAME}_Local_Indexing_Claimed.lock")):
-            remove(path.join(INDEXES_PATH, f"{COMPUTERNAME}_Local_Indexing_Claimed.lock"))
+        self.indexer.stop()
         self.save_tabs()
+        if path.exists(path.join(INDEXES_PATH, f"{COMPUTERNAME}_is_alive")):
+            remove(path.join(INDEXES_PATH, f"{COMPUTERNAME}_is_alive"))
         self.purge_temp_folder()
 
     def close_tab(self, index):
@@ -711,11 +688,18 @@ class FlashFinder(QMainWindow):
         self.tab_widget.removeTab(index)
 
     def compress_items(self, file_paths: list):
-        self.worker = FileOperationThread("processes", file_paths)
-        self.worker.operationFinished.connect(self.show_operation_results)
-        self.worker.start()
-        self.search_progress_bar.setMaximum(0)
-        self.undo_history.append(("compress", file_paths))
+        import zipfile
+        zip_path = file_paths[0].split(".")[0] + ".zip" if len(file_paths) == 1 else path.join(self.current_path, "compressed_items.zip")
+        with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zipf:
+            for file_path in file_paths:
+                if path.isdir(file_path):
+                    for dirpath, dirnames, filenames in walk(file_path):
+                        for filename in filenames:
+                            relative_path = path.relpath(path.join(dirpath, filename), file_path)
+                            zipf.write(path.join(dirpath, filename), arcname=relative_path)
+                else:
+                    zipf.write(file_path, arcname=path.basename(file_path))
+        self.undo_history.append(("compress", zip_path))
 
     def copy_item(self, file_paths: list, copy_type: str):
         mime_data = QMimeData()
@@ -956,7 +940,7 @@ class FlashFinder(QMainWindow):
 
     def create_new_view(self, main_view: bool=False, root_path: str=None) -> TreeView:
         if main_view:
-            if load_settings("general").get("RELOAD_MAIN_TAB"):
+            if self.load_general_settings().get("RELOAD_MAIN_TAB"):
                 try:
                     with open(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_tabs.json"), "r") as file:
                         tabs = load(file)
@@ -1014,10 +998,10 @@ class FlashFinder(QMainWindow):
         self.undo_history.append(("new-shortcut", dest_path))
 
     def extract_item(self, zip_path: str):
-        self.worker = FileOperationThread("extract", [zip_path])
-        self.worker.operationFinished.connect(self.show_operation_results)
-        self.worker.start()
-        self.search_progress_bar.setMaximum(0)
+        extract_folder = path.splitext(zip_path)[0]
+        with ZipFile(zip_path, "r") as zipf:
+            zipf.extractall(extract_folder)
+        self.undo_history.append(("extract", extract_folder))
 
     def format_file_size(self, size_in_bytes: int) -> str:
         suffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
@@ -1113,7 +1097,7 @@ class FlashFinder(QMainWindow):
         if is_internal:
             self.move_item(paths, destination_path)
         else:
-            if load_settings("general").get("EXTERNAL_DROP_MODE") == "Paste":
+            if self.load_general_settings().get("EXTERNAL_DROP_MODE") == "Paste":
                 self.paste_paths(paths)
             else:
                 self.move_item(paths, destination_path)
@@ -1172,6 +1156,33 @@ class FlashFinder(QMainWindow):
             self.pinned.clear()
             self.load_items_to_tree(items)
             self.pinned.blockSignals(False)
+            
+    def load_general_settings(self) -> dict:
+        general_settings_path = path.join(SETTINGS_PATH, f"{COMPUTERNAME}_general-settings.json")
+        default_settings = {
+            "SCROLL_TO": False,
+            "REPLACE_DUPLICATES": False,
+            "EXTERNAL_DROP_MODE": "Paste"
+        }
+
+        if path.exists(general_settings_path):
+            with open(general_settings_path, "r") as f:
+                general_settings = load(f)
+            updated = False
+            for key, value in default_settings.items():
+                if key not in general_settings:
+                    general_settings[key] = value
+                    updated = True
+
+            if updated:
+                with open(general_settings_path, "w") as f:
+                    dump(general_settings, f, indent=4)
+        else:
+            general_settings = default_settings
+            with open(general_settings_path, "w") as f:
+                dump(general_settings, f, indent=4)
+
+        return general_settings
 
     def load_search_history(self):
         if path.exists(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_search_history.json")):
@@ -1179,6 +1190,29 @@ class FlashFinder(QMainWindow):
                 self.search_history = OrderedDict(load(file))
                 self.remove_old_search_history()
                 self.search_bar.addItems(self.search_history.keys())
+            
+    def load_search_settings(self):
+        if path.exists(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_search-settings.json")):
+            with open(path.join(SETTINGS_PATH, f"{COMPUTERNAME}_search-settings.json"), "r") as f:
+                search_settings = load(f)
+        else:
+            search_settings = {
+                "INDEXED_SEARCH": True,
+                "EXCLUDE_PATHS": [
+                    "$Recycle.Bin",
+                    "$RECYCLE.BIN",
+                    "System Volume Information",
+                    "Windows",
+                    "Program Files",
+                    "Program Files (x86)",
+                    "ProgramData",
+                    "Recovery"
+                ],
+                "INCLUDE_SUBFOLDERS": False,
+                "CACHED_SEARCH": True,
+                "HISTORY_LIFETIME": 259200 # 3 days
+            }
+        return search_settings
         
     def load_tabs(self):
         try:
@@ -1358,7 +1392,7 @@ class FlashFinder(QMainWindow):
         self.search_info_label.setText(f" Results: {result_count:,} | Search Time: {search_time:.2f} s  ")
 
     def on_search_result_item_clicked(self, item: QTreeWidgetItem):
-        if load_settings("general").get("SCROLL_TO_RESULT"):
+        if self.load_general_settings().get("SCROLL_TO_RESULT"):
             file_path = item.data(2, 0)
             index = self.model.index(file_path)
             folder_path = "\\".join(file_path.split("\\")[:-1])
@@ -1519,10 +1553,7 @@ class FlashFinder(QMainWindow):
         if path.exists(TEMP_PATH):
             for file in listdir(TEMP_PATH):
                 file_path = path.join(TEMP_PATH, file)
-                try:
-                    remove(file_path)
-                except PermissionError:
-                    pass
+                remove(file_path)
 
     def relink_pinned_item(self, item: QTreeWidgetItem):
         old_path = item.data(0, Qt.ItemDataRole.UserRole)
@@ -1540,8 +1571,8 @@ class FlashFinder(QMainWindow):
     def remove_old_search_history(self):
         current_time = time()
         for item, timestamp in list(self.search_history.items()):
-            if current_time is float and timestamp is float:
-                if current_time - timestamp > load_settings("search").get("HISTORY_LIFETIME"):
+            if current_time and timestamp:
+                if current_time - timestamp > self.load_search_settings().get("HISTORY_LIFETIME"):
                     del self.search_history[item]
 
     def remove_pinned_item(self, item: QTreeWidgetItem):
@@ -1643,21 +1674,21 @@ class FlashFinder(QMainWindow):
             self.is_maximized = True
             self.resize(screen_geometry.width(), screen_geometry.height())
             self.move(screen_geometry.x(), screen_geometry.y())
+            
+    def show_popup(self, title: str, message: str):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Warning)
+        msg.setWindowTitle(title)
+        msg.setText(message)
+        msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+        msg.exec()
 
-    def show_advanced_search(self):
-        self.advanced_search_window = AdvancedSearchWindow(self)
-        self.advanced_search_window.show()
-
-    def show_operation_results(self, results: set):
+    def show_process_result(self, processes: set):
         self.search_progress_bar.setMaximum(100)
-        result_type, output = results
-        if result_type == "processes":
-            if "No matching handles found." in output:
-                QMessageBox.information(self, "File Usage", f"No processes are using the file:\n{self.worker.file_paths[0]}")
-            else:
-                QMessageBox.information(self, "File Usage", output)
+        if "No matching handles found." in processes:
+            QMessageBox.information(self, "File Usage", f"No processes are using the file:\n{self.worker.file_path}")
         else:
-            QMessageBox.information(self, "File Process", output)
+            QMessageBox.information(self, "File Usage", processes)
 
     def show_properties(self, file_path: str):
         self.properties_window = QWidget(self, Qt.WindowType.Window)
@@ -1766,8 +1797,8 @@ class FlashFinder(QMainWindow):
         self.properties_window.show()
 
     def show_whats_using_file(self, file_path: str):
-        self.worker = FileOperationThread("processes", [file_path])
-        self.worker.operationFinished.connect(self.show_operation_results)
+        self.worker = FileProcessThread(file_path, path.join(BASE_PATH, "handle.exe"))
+        self.worker.finished_signal.connect(self.show_process_result)
         self.worker.start()
         self.search_progress_bar.setMaximum(0)
 
@@ -1818,11 +1849,10 @@ class FlashFinder(QMainWindow):
             for index in indices:
                 if self.model.filePath(index) not in file_paths:
                     file_paths.append(self.model.filePath(index))
-            progress_window = ProgressWindow()
-            progress_window.show()
-            self.compare_thread = CompareThread(file_paths, progress_window)
+            self.compare_thread = CompareThread(file_paths)
             self.compare_thread.progressUpdated.connect(self.onProgressUpdated)
             self.compare_thread.compareComplete.connect(self.onCompareComplete)
+            self.compare_thread.popupSignal.connect(self.show_popup)
             self.compare_thread.start()
 
     def start_searching(self): 
@@ -1839,7 +1869,7 @@ class FlashFinder(QMainWindow):
             self.search_bar.clear()
             self.search_bar.setCurrentText(query)
             self.search_bar.addItems(self.search_history.keys())
-            self.search_thread = FileSearchThread(query, self.address_bar.text(), self.index_count, self.index_cache, search_all_drives=0 if "All Drives" in self.search_bar.placeholderText() else 1)
+            self.search_thread = FileSearchThread(query, self.address_bar.text(), self.index_count, self.index_cache, mode=0 if "All Drives" in self.search_bar.placeholderText() else 1)
             self.search_thread.noMatchingFiles.connect(self.onNoMatchingFiles)
             self.search_thread.searchFinished.connect(self.onSearchFinished)
             self.search_thread.foundMatchingFile.connect(self.onFoundMatchingFile)
@@ -1875,18 +1905,18 @@ class FlashFinder(QMainWindow):
                 if len(file_paths) == 1:
                     reply = QMessageBox.question(self, "Delete Item", f"Are you sure you want to move '{file_path}' to the recycling bin?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
                 elif len(file_paths) > 1 and first is True:
-                    reply = QMessageBox.question(self, "Delete Item", f"Are you sure you want to move {len(file_paths)} files to the recycling bin?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
+                    reply = QMessageBox.question(self, "Delete Item", f"Are you sure you want to move {len(file_path)} files to the recycling bin?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
                     first = False
                 if reply == QMessageBox.StandardButton.Yes:
                     name = path.basename(file_path)
-                    names.append(path.basename(file_path))
+                    names.append(path.basename(path))
                     old_paths.append(path.dirname(file_path))
                     try:
                         if path.isfile(file_path):
                             copy2(file_path, TEMP_PATH)
                         else:
-                            copytree(file_path, path.join(TEMP_PATH, name))
-                        send2trash(file_path)
+                            copytree(path, path.join(TEMP_PATH, name))
+                        send2trash(path)
                     except PermissionError:
                         name, _ = path.splitext(name)
                         QMessageBox.critical(self, "Permission Error", f"{name} is being used by another process.")
@@ -1999,14 +2029,15 @@ class FlashFinder(QMainWindow):
         try:
             file_count = len(listdir(self.current_path))
             self.file_count_label.setText(f"File Count: {file_count:,}")
-        except NotADirectoryError or FileNotFoundError:
+        except NotADirectoryError:
             file_count = "NIL"
             self.file_count_label.setText(f"File Count: {file_count}")
-            
-    def update_index_cache(self, index_cache: dict):
-        self.index_cache = index_cache
+        except FileNotFoundError:
+            file_count = "NIL"
+            self.file_count_label.setText(f"File Count: {file_count}")
 
-    def update_indexing_labels(self, text: str, indexed_count: int):
+    def update_indexing_labels(self, text: str, indexed_count: int, index_cache: dict):
+        self.index_cache = index_cache
         self.index_count = indexed_count
         self.status_label.setText(text)
         self.index_label.setText(f"Indexed Items: {indexed_count:,}")

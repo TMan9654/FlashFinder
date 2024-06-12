@@ -3,7 +3,7 @@ from darkdetect import isDark
 
 VERSION = "7.6.0"
 
-COMPUTERNAME = environ.get("COMPUTERNAME", "DefaultName")
+COMPUTERNAME = environ["COMPUTERNAME"]
 
 _desktop_path = path.join(environ["USERPROFILE"], "Desktop")
 _onedrive_desktop_path = path.join(environ["USERPROFILE"], "OneDrive", "Desktop")

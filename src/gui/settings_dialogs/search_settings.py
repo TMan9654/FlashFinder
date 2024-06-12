@@ -1,5 +1,6 @@
 
 from ...config.config import INDEXES_PATH, SETTINGS_PATH, COMPUTERNAME
+from ...utils.utils import load_settings, save_settings
 
 from os import path
 from json import load, dump
@@ -12,8 +13,7 @@ class SearchSettings(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.indexer_running_file = path.join(INDEXES_PATH, f"{COMPUTERNAME}_indexer_running")
-        self.search_settings_path = path.join(SETTINGS_PATH, f"{COMPUTERNAME}_search-settings.json")
-        self.search_settings = self.load_settings()
+        self.search_settings = load_settings("search")
         self.INCLUDE_SUBFOLDERS = self.search_settings.get("INCLUDE_SUBFOLDERS")
         self.EXCLUDE_PATHS = self.search_settings.get("EXCLUDE_PATHS")
         self.INDEXED_SEARCH = self.search_settings.get("INDEXED_SEARCH")
@@ -167,24 +167,24 @@ class SearchSettings(QWidget):
             self.INCLUDE_SUBFOLDERS = True
         else:
             self.INCLUDE_SUBFOLDERS = False
-        self.save_settings()
+        save_settings("search", self.search_settings)
 
     def set_excluded_paths(self, paths: list):
         if paths:
             self.EXCLUDE_PATHS = list(paths)
-        self.save_settings()
+        save_settings("search", self.search_settings)
         
     def set_history_lifetime(self, time: int):
         if time:
             self.HISTORY_LIFETIME = time * 86400
-        self.save_settings()
+        save_settings("search", self.search_settings)
 
     def indexed_search(self, state: int):
         if state == 2:
             self.INDEXED_SEARCH = True
         else:
             self.INDEXED_SEARCH = False
-        self.save_settings()
+        save_settings("search", self.search_settings)
         
     def cached_search(self, state: int):
         if state == 2:
@@ -195,49 +195,7 @@ class SearchSettings(QWidget):
             self.CACHED_SEARCH = False
             with open(self.indexer_running_file, "w") as f:
                 f.write("Clearing Cache...")
-        self.save_settings()
-
-    def load_settings(self) -> dict:
-        default_settings = {
-            "INCLUDE_SUBFOLDERS": True,
-            "EXCLUDE_PATHS": ["$Recycle.Bin", "$RECYCLE.BIN", "System Volume Information", "Windows", "Program Files", "Program Files (x86)", "ProgramData", "Recovery"],
-            "INDEXED_SEARCH": True,
-            "CACHED_SEARCH": True,
-            "HISTORY_LIFETIME": 259200
-        }
-
-        if path.exists(self.search_settings_path):
-            with open(self.search_settings_path, "r") as f:
-                search_settings = load(f)
-            updated = False
-            for key, value in default_settings.items():
-                if key not in search_settings:
-                    search_settings[key] = value
-                    updated = True
-
-            if updated:
-                with open(self.search_settings_path, "w") as f:
-                    dump(search_settings, f, indent=4)
-        else:
-            search_settings = default_settings
-            with open(self.search_settings_path, "w") as f:
-                dump(search_settings, f, indent=4)
-
-        return search_settings
-
-    def save_settings(self):
-        self.search_settings = {
-            "INDEXED_SEARCH": self.INDEXED_SEARCH,
-            "EXCLUDE_PATHS": self.EXCLUDE_PATHS,
-            "INCLUDE_SUBFOLDERS": self.INCLUDE_SUBFOLDERS,
-            "CACHED_SEARCH": self.CACHED_SEARCH,
-            "HISTORY_LIFETIME": self.HISTORY_LIFETIME
-        }
-        try:
-            with open(self.search_settings_path, "w") as f:
-                dump(self.search_settings, f, indent=4)
-        except PermissionError:
-            self.save_settings()
+        save_settings("search", self.search_settings)
 
     def rebuild_index(self):
         rebuild_signal_path = path.join(SETTINGS_PATH, f"{COMPUTERNAME}_rebuild")

@@ -1,7 +1,7 @@
 
 from ...config.config import VERSION, DATA_PATH, COMPUTERNAME
 
-from os import path
+from os import path, mkdir
 from shutil import copy2
 from datetime import datetime
 from PySide6.QtWidgets import QWidget, QGroupBox, QLabel, QTextEdit, QPushButton, QVBoxLayout, QFileDialog
@@ -91,16 +91,16 @@ Review the changelog to learn about new additions in each update."""
             f"Date & Time: {current_datetime}\n"
             f"Suggestion:\n{suggestion}\n"
         )
-        
-        if path.exists(path.join(DATA_PATH, "User Suggestions.txt")):
-            with open(path.join(DATA_PATH, "User Suggestions.txt"), "a") as file:
-                file.write(formatted_suggestion)
-                if self.attachment_path:
-                    basename = path.basename(self.attachment_path)
-                    unique_filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{basename}"
-                    destination_path = path.join(DATA_PATH, unique_filename)          
-                    copy2(self.attachment_path, destination_path)                
-                    file.write(f"Attached file: {destination_path}\n")
+        if not path.exists(DATA_PATH):
+            mkdir(DATA_PATH)
+        with open(path.join(DATA_PATH, "User Suggestions.txt"), "a") as file:
+            file.write(formatted_suggestion)
+            if self.attachment_path:
+                basename = path.basename(self.attachment_path)
+                unique_filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{basename}"
+                destination_path = path.join(DATA_PATH, unique_filename)          
+                copy2(self.attachment_path, destination_path)                
+                file.write(f"Attached file: {destination_path}\n")
 
             file.write("========================================\n\n")
         self.suggestion_text.clear()
