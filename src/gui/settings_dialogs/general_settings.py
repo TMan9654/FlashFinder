@@ -45,67 +45,67 @@ class GeneralSettings(QWidget):
         
         self.setLayout(main_layout)
         
-        self.setStyleSheet("""
-            QLabel {
-                color: black;
-                font: 14px Arial, sans-serif;
-            }
-            QComboBox { 
-                background-color: #FFFFFF; 
-                color: #333; 
-                font: 14px Arial, sans-serif;
-                border: 1px solid #CCC; 
-            }
-            QComboBox:hover { 
-                background-color: #EDEDED; 
-            }
-            QComboBox:focus { 
-                background-color: #E5E5E5; 
-            }
-            QComboBox:disabled { 
-                background-color: #FAFAFA; 
-                color: #888; 
-                border: 1px solid #CCC; 
-            }
-            QComboBox QAbstractItemView { 
-                background-color: #FFFFFF; 
-                color: #333; 
-                selection-background-color: #E0E0E0; 
-                selection-color: #333; 
-                border: 1px solid #CCC; 
-            }
-            QCheckBox {
-                color: black;
-                font: 14px Arial, sans-serif;
-            }
-            QGroupBox {
-                font: 14px Arial, sans-serif;
-                border: 1px solid #ccc;
-                margin-top: 1em;
-                background-color: #f0f0f0;
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 3px 0 3px;
-            }
-            """)
+        # self.setStyleSheet("""
+        #     QLabel {
+        #         color: black;
+        #         font: 14px Arial, sans-serif;
+        #     }
+        #     QComboBox { 
+        #         background-color: #FFFFFF; 
+        #         color: #333; 
+        #         font: 14px Arial, sans-serif;
+        #         border: 1px solid #CCC; 
+        #     }
+        #     QComboBox:hover { 
+        #         background-color: #EDEDED; 
+        #     }
+        #     QComboBox:focus { 
+        #         background-color: #E5E5E5; 
+        #     }
+        #     QComboBox:disabled { 
+        #         background-color: #FAFAFA; 
+        #         color: #888; 
+        #         border: 1px solid #CCC; 
+        #     }
+        #     QComboBox QAbstractItemView { 
+        #         background-color: #FFFFFF; 
+        #         color: #333; 
+        #         selection-background-color: #E0E0E0; 
+        #         selection-color: #333; 
+        #         border: 1px solid #CCC; 
+        #     }
+        #     QCheckBox {
+        #         color: black;
+        #         font: 14px Arial, sans-serif;
+        #     }
+        #     QGroupBox {
+        #         font: 14px Arial, sans-serif;
+        #         border: 1px solid #ccc;
+        #         margin-top: 1em;
+        #         background-color: #f0f0f0;
+        #     }
+        #     QGroupBox::title {
+        #         subcontrol-origin: margin;
+        #         left: 10px;
+        #         padding: 0 3px 0 3px;
+        #     }
+        #     """)
         
     def reload_main_tab(self, state: int):
         if state == 2:
-            self.RELOAD_MAIN_TAB = True
+            self.general_settings["RELOAD_MAIN_TAB"] = True
         else:
-            self.RELOAD_MAIN_TAB = False
+            self.general_settings["RELOAD_MAIN_TAB"] = False
         save_settings("general", self.general_settings)
         
     def set_drop_mode(self, mode: str):
-        self.EXTERNAL_DROP_MODE = mode
+        self.general_settings["EXTERNAL_DROP_MODE"] = mode
         save_settings("general", self.general_settings)
     
     def scroll_to(self, state: int):
         if state == 2:
-            self.SCROLL_TO = True
+            self.general_settings["SCROLL_TO"] = True
         else:
-            self.SCROLL_TO = False
+            self.general_settings["SCROLL_TO"] = False
         save_settings("general", self.general_settings)
        

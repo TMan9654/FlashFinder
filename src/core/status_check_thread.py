@@ -11,7 +11,6 @@ from PySide6.QtCore import QThread, Signal
 
 class StatusCheckThread(QThread):
     statusChanged = Signal(str, int)
-    updateIndexCache = Signal(dict)
     requestClose = Signal()
 
     def __init__(self, parent=None):
@@ -19,27 +18,28 @@ class StatusCheckThread(QThread):
         self.indexer_running_file = path.join(INDEXES_PATH, f"{COMPUTERNAME}_indexer_running")
         self.index_cache = {}
         self.previous_time = 0
+        self.last_status = "Initializing..."
 
     def run(self):
-        last_status = "Idle"
         while True:
             self.check_for_update()
             if path.exists(self.indexer_running_file):
                 with open(self.indexer_running_file, "r") as f:
                     status = f.read()
-                    if status != last_status:
+                    if status and status != self.last_status:
                         index_count = self.get_index_count()
                         if index_count >= 0:
                             self.statusChanged.emit(status, index_count)
-                            self.updateIndexCache.emit(self.index_cache)
-                            last_status = status
+                            self.last_status = status
                         else:
                             self.statusChanged.emit("Indexer Error", index_count)
             else:
-                if last_status != "Idle":
+                if self.last_status != "Idle":
                     index_count = self.get_index_count()
                     self.statusChanged.emit("Idle", index_count)
-                    last_status = "Idle"
+                    self.last_status = "Idle"
+            if self.parent().index_cache != self.index_cache:
+                self.parent().index_cache = self.index_cache
             QThread.sleep(3)
 
     def check_for_update(self):
@@ -51,7 +51,9 @@ class StatusCheckThread(QThread):
     def get_index_count(self) -> int:
         if path.exists(self.indexer_running_file):
             with open(self.indexer_running_file, "r") as f:
-                last_status = f.read()
+                status = f.read()
+                if status and (status != "Caching..." or status != "Clearing Cache..."):
+                    self.last_status = f.read()
         else:
             return -1
         search_settings = load_settings("search")
@@ -72,12 +74,12 @@ class StatusCheckThread(QThread):
                                 self.previous_time = current_time
                                 self.index_cache[target_file] = data["index"]
                                 with open(self.indexer_running_file, "w") as f:
-                                    f.write(last_status)
+                                    f.write(self.last_status)
                         else:
                             if self.index_cache:
                                 self.index_cache.clear()
                                 with open(self.indexer_running_file, "w") as f:
-                                    f.write(last_status)
+                                    f.write(self.last_status)
                         indexed_count += data["metadata"]["TOTAL_INDEXED"]
                 except PermissionError:
                     pass

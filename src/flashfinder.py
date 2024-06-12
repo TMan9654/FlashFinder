@@ -41,14 +41,14 @@ from subprocess import Popen
 from json import load, dump
 from ctypes import wintypes
 from time import time
-from shutil import move, copytree, copy2
+from shutil import move, copytree, copy2, rmtree
 from win32security import GetFileSecurity, OWNER_SECURITY_INFORMATION, LookupAccountSid
 from PySide6.QtCore import Qt, QTimer, QItemSelectionModel, QMimeData, QUrl, QPoint, QFileInfo, QSize
 from PySide6.QtGui import QResizeEvent, QKeySequence, QIcon, QPixmap, QGuiApplication, QCursor, QAction, QShortcut
 from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QLabel, QPushButton, QMessageBox, QTreeWidget, \
     QTreeWidgetItem, QHeaderView, QFileDialog, QMenu, QSplitter, QAbstractItemView, QFileIconProvider, QProgressBar, \
         QFormLayout, QTabBar, QLineEdit, QDockWidget, QToolBar, QInputDialog, QStatusBar, QDialog, QWidget, QSizePolicy, \
-        QTreeView, QHBoxLayout
+        QTreeView
 
 
 class FlashFinder(QMainWindow):
@@ -70,6 +70,7 @@ class FlashFinder(QMainWindow):
         self.compare_thread = None
         self.is_dragging = False
         self.is_being_dragged = False
+        self.last_op_cut = False
         self.tab_iterator = 0
         
         self.index_cache = {}
@@ -385,15 +386,18 @@ class FlashFinder(QMainWindow):
 
         self.paste_shortcut = QShortcut(QKeySequence("Ctrl+V"), current_view)
         self.paste_shortcut.activated.connect(self.paste_item)
+        
+        self.cut_shortcut = QShortcut(QKeySequence("Ctrl+X"), current_view)
+        self.cut_shortcut.activated.connect(lambda: self.copy_item(list(set(self.model.filePath(index) for index in current_view.selectedIndexes())), "item", cut=True))
 
         self.move_shortcut = QShortcut(QKeySequence("Ctrl+M"), current_view)
         self.move_shortcut.activated.connect(lambda: self.move_item(list(set(self.model.filePath(index) for index in current_view.selectedIndexes()))))
 
-        self.rename_shortcut = QShortcut(QKeySequence("Ctrl+R"), current_view)
+        self.rename_shortcut = QShortcut(QKeySequence("F2"), current_view)
         self.rename_shortcut.activated.connect(lambda: self.rename_item(self.model.filePath(current_view.currentIndex())))
 
         self.delete_shortcut = QShortcut(QKeySequence("Del"), current_view)
-        self.delete_shortcut.activated.connect(lambda: self.trash_item(list(set(self.model.filePath(index) for index in current_view.selectedIndexes()))))
+        self.delete_shortcut.activated.connect(lambda: self.trash_items(list(set(self.model.filePath(index) for index in current_view.selectedIndexes()))))
 
         self.new_file_shortcut = QShortcut(QKeySequence("Ctrl+N"), current_view)
         self.new_file_shortcut.activated.connect(self.create_new_file)
@@ -431,6 +435,9 @@ class FlashFinder(QMainWindow):
 
         self.new_tab_shortcut = QShortcut(QKeySequence("Ctrl+T"), current_view)
         self.new_tab_shortcut.activated.connect(self.add_new_tab)
+        
+        self.compare_shortcut = QShortcut(QKeySequence("Shift+C"), current_view)
+        self.compare_shortcut.activated.connect(self.start_comparing())
 
     def add_new_tab(self, label: str=None, file_path: str=None):
         self.tab_iterator = self.tab_widget.count()
@@ -717,7 +724,9 @@ class FlashFinder(QMainWindow):
         self.search_progress_bar.setMaximum(0)
         self.undo_history.append(("compress", file_paths))
 
-    def copy_item(self, file_paths: list, copy_type: str):
+    def copy_item(self, file_paths: list, copy_type: str, cut=False):
+        if cut:
+            self.undo_history.append(("cut", file_paths))
         mime_data = QMimeData()
         if copy_type == "item":
             mime_data.setUrls([QUrl.fromLocalFile(file_path) for file_path in file_paths])
@@ -771,7 +780,7 @@ class FlashFinder(QMainWindow):
             
             if len(file_paths) >= 1:
                 delete_action = QAction("Delete All" if len(file_paths) > 1 else "Delete", context_menu)
-                delete_action.triggered.connect(lambda: self.trash_item(file_paths))
+                delete_action.triggered.connect(lambda: self.trash_items(file_paths))
                 context_menu.addAction(delete_action)
 
                 move_action = QAction("Move All..." if len(file_paths) > 1 else "Move...", context_menu)
@@ -781,6 +790,10 @@ class FlashFinder(QMainWindow):
                 copy_action = QAction("Copy All" if len(file_paths) > 1 else "Copy", context_menu)
                 copy_action.triggered.connect(lambda: self.copy_item(file_paths, "item"))
                 context_menu.addAction(copy_action)
+                
+                cut_action = QAction("Cut All" if len(file_paths) > 1 else "Cut", context_menu)
+                cut_action.triggered.connect(lambda: self.copy_item(file_paths, "item", cut=True))
+                context_menu.addAction(cut_action)
             
             # Other copy operations
             if len(file_paths) == 1:
@@ -1404,16 +1417,24 @@ class FlashFinder(QMainWindow):
         settings_dialog = SettingsDialog(self)
         settings_dialog.exec()
 
-    def paste_item(self):
+    def paste_item(self) -> None:
         if self.access.text() == "Write":
             mime_data = self.clipboard.mimeData()
             if mime_data.hasUrls():
                 file_paths = [url.toLocalFile() for url in mime_data.urls()]
-                self.paste_paths(file_paths)
+                cut = True if self.undo_history and self.undo_history[-1][0] == "cut" else False
+                self.paste_paths(file_paths, cut)
+                if cut:
+                    for file_path in file_paths:
+                        base_path, ext = path.splitext(file_path)
+                        if ext:
+                            remove(file_path)
+                        else:
+                            rmtree(file_path)
         else:
             QMessageBox.information(self, "Permission Error", "You don't have the required permissions.")
 
-    def paste_paths(self, file_paths: list):
+    def paste_paths(self, file_paths: list, cut: bool):
         if self.access.text() == "Write":
             new_paths = []
             replace_all = False
@@ -1454,6 +1475,8 @@ class FlashFinder(QMainWindow):
                 except Exception as e:
                     QMessageBox.critical(self, "Error", f"An error occurred while pasting: {str(e)}")
                 new_paths.append(destination)
+            if cut:
+                self.undo_history.pop()
             self.undo_history.append(("paste", new_paths))
         else:
             QMessageBox.information(self, "Permission Error", "You don't have the required permissions.")
@@ -1863,7 +1886,7 @@ class FlashFinder(QMainWindow):
     def toggle_sidebar(self):
         self.sidebar.setVisible(not self.sidebar.isVisible())
 
-    def trash_item(self, file_paths: list):
+    def trash_items(self, file_paths: list):
         if self.access.text() == "Write":
             if not path.exists(TEMP_PATH):
                 mkdir(TEMP_PATH)
@@ -1883,8 +1906,12 @@ class FlashFinder(QMainWindow):
                     old_paths.append(path.dirname(file_path))
                     try:
                         if path.isfile(file_path):
+                            if path.exists(path.join(TEMP_PATH, name)):
+                                remove(path.join(TEMP_PATH, name))
                             copy2(file_path, TEMP_PATH)
                         else:
+                            if path.exists(path.join(TEMP_PATH, name)):
+                                rmtree(path.join(TEMP_PATH, name))
                             copytree(file_path, path.join(TEMP_PATH, name))
                         send2trash(file_path)
                     except PermissionError:
@@ -1943,7 +1970,10 @@ class FlashFinder(QMainWindow):
                 # data: new_paths
                 for file_path in data:
                     if path.exists(file_path):
-                        remove(file_path)
+                        if path.isdir(file_path):
+                            rmtree(file_path)
+                        else:
+                            remove(file_path)
             
             elif last_operation == "pin":
                 # data: QTopLevelItem
@@ -1966,7 +1996,7 @@ class FlashFinder(QMainWindow):
                     file_path = path.join(TEMP_PATH, data[0][i])
                     if path.exists(file_path):
                         move(file_path, data[1][i])
-
+                
     def update_address_bar(self):
         current_view = self.get_current_view()
         if current_view:
@@ -2002,9 +2032,6 @@ class FlashFinder(QMainWindow):
         except NotADirectoryError or FileNotFoundError:
             file_count = "NIL"
             self.file_count_label.setText(f"File Count: {file_count}")
-            
-    def update_index_cache(self, index_cache: dict):
-        self.index_cache = index_cache
 
     def update_indexing_labels(self, text: str, indexed_count: int):
         self.index_count = indexed_count

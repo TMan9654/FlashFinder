@@ -1,7 +1,7 @@
 from os import path, environ
 from darkdetect import isDark
 
-VERSION = "7.6.0"
+VERSION = "7.6.2"
 
 COMPUTERNAME = environ["COMPUTERNAME"]
 

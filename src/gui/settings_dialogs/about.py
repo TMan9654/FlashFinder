@@ -50,31 +50,31 @@ Review the changelog to learn about new additions in each update."""
         suggestion_group.setLayout(suggestion_group_layout)
         self.setLayout(main_layout)
         
-        self.setStyleSheet("""
-            QLabel {
-                color: black;
-                background-color: #ffffff;
-                font: 14px Arial, sans-serif;
-            }
-            QWidget {
-                background-color: #f0f0f0;
-            }
-            QTextEdit {
-                background-color: #ffffff;
-                font: 13px Arial, sans-serif;
-            }
-            QPushButton {
-                background-color: #0078D4;
-                color: white;
-                border: none;
-                padding: 3px 5px;
-                text-align: center;
-                text-decoration: none;
-                font-size: 14px;
-                margin: 4px 2px;
-                border-radius: 4px;
-            }
-        """)
+        # self.setStyleSheet("""
+        #     QLabel {
+        #         color: black;
+        #         background-color: #ffffff;
+        #         font: 14px Arial, sans-serif;
+        #     }
+        #     QWidget {
+        #         background-color: #f0f0f0;
+        #     }
+        #     QTextEdit {
+        #         background-color: #ffffff;
+        #         font: 13px Arial, sans-serif;
+        #     }
+        #     QPushButton {
+        #         background-color: #0078D4;
+        #         color: white;
+        #         border: none;
+        #         padding: 3px 5px;
+        #         text-align: center;
+        #         text-decoration: none;
+        #         font-size: 14px;
+        #         margin: 4px 2px;
+        #         border-radius: 4px;
+        #     }
+        # """)
 
     def attach_file(self):
         self.attachment_path, _ = QFileDialog.getOpenFileName(self, "Select File", "", "All Files (*)")

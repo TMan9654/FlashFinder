@@ -135,132 +135,132 @@ class CompareSettings(QWidget):
         main_layout.addWidget(general_group)
         
         self.setLayout(main_layout)
-        self.setStyleSheet("""
-            QLabel {
-                color: black;
-                font: 14px Arial, sans-serif;
-            }
-            QSpinBox {
-                color: black;
-                font: 14px Arial, sans-serif;
-                border: 1px solid #ccc;
-                padding: 5px;
-                background-color: #f0f0f0;
-            }
-            QComboBox { 
-                background-color: #FFFFFF; 
-                color: #333; 
-                font: 14px Arial, sans-serif;
-                border: 1px solid #CCC; 
-            }
-            QComboBox:hover { 
-                background-color: #EDEDED; 
-            }
-            QComboBox:focus { 
-                background-color: #E5E5E5; 
-            }
-            QComboBox:disabled { 
-                background-color: #FAFAFA; 
-                color: #888; 
-                border: 1px solid #CCC; 
-            }
-            QComboBox QAbstractItemView { 
-                background-color: #FFFFFF; 
-                color: #333; 
-                selection-background-color: #E0E0E0; 
-                selection-color: #333; 
-                border: 1px solid #CCC; 
-            }
-            QCheckBox {
-                color: black;
-                font: 14px Arial, sans-serif;
-            }
-            QLineEdit {
-                color: black;
-                font: 14px Arial, sans-serif;
-                border: 1px solid #ccc;
-                padding: 5px;
-                background-color: #f0f0f0;
-            }
-            QGroupBox {
-                font: 14px Arial, sans-serif;
-                border: 1px solid #ccc;
-                margin-top: 1em;
-                background-color: #f0f0f0;
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 3px 0 3px;
-            }
-            QFormLayout {
-                margin: 5px;
-                border: 1px solid #ccc;
-                background-color: #f0f0f0;
-            }
-            QWidget {
-                background-color: #f0f0f0;
-            }
-        """)
+        # self.setStyleSheet("""
+        #     QLabel {
+        #         color: black;
+        #         font: 14px Arial, sans-serif;
+        #     }
+        #     QSpinBox {
+        #         color: black;
+        #         font: 14px Arial, sans-serif;
+        #         border: 1px solid #ccc;
+        #         padding: 5px;
+        #         background-color: #f0f0f0;
+        #     }
+        #     QComboBox { 
+        #         background-color: #FFFFFF; 
+        #         color: #333; 
+        #         font: 14px Arial, sans-serif;
+        #         border: 1px solid #CCC; 
+        #     }
+        #     QComboBox:hover { 
+        #         background-color: #EDEDED; 
+        #     }
+        #     QComboBox:focus { 
+        #         background-color: #E5E5E5; 
+        #     }
+        #     QComboBox:disabled { 
+        #         background-color: #FAFAFA; 
+        #         color: #888; 
+        #         border: 1px solid #CCC; 
+        #     }
+        #     QComboBox QAbstractItemView { 
+        #         background-color: #FFFFFF; 
+        #         color: #333; 
+        #         selection-background-color: #E0E0E0; 
+        #         selection-color: #333; 
+        #         border: 1px solid #CCC; 
+        #     }
+        #     QCheckBox {
+        #         color: black;
+        #         font: 14px Arial, sans-serif;
+        #     }
+        #     QLineEdit {
+        #         color: black;
+        #         font: 14px Arial, sans-serif;
+        #         border: 1px solid #ccc;
+        #         padding: 5px;
+        #         background-color: #f0f0f0;
+        #     }
+        #     QGroupBox {
+        #         font: 14px Arial, sans-serif;
+        #         border: 1px solid #ccc;
+        #         margin-top: 1em;
+        #         background-color: #f0f0f0;
+        #     }
+        #     QGroupBox::title {
+        #         subcontrol-origin: margin;
+        #         left: 10px;
+        #         padding: 0 3px 0 3px;
+        #     }
+        #     QFormLayout {
+        #         margin: 5px;
+        #         border: 1px solid #ccc;
+        #         background-color: #f0f0f0;
+        #     }
+        #     QWidget {
+        #         background-color: #f0f0f0;
+        #     }
+        # """)
             
     def set_dpi_level(self, DPI: str):
         if DPI != "":
-            self.DPI = DPI
-            self.DPI_LEVEL = self.DPI_LEVELS[self.DPI_LABELS.index(DPI)]
+            self.compare_settings["DPI"] = DPI
+            self.compare_settings["DPI_LEVEL"] = self.DPI_LEVELS[self.DPI_LABELS.index(DPI)]
         save_settings("compare", self.compare_settings)
     
     def set_page_size(self, page_size: str):
-        self.PAGE_NAME = page_size
-        self.PAGE_SIZE = self.PAGE_SIZES[page_size]
+        self.compare_settings["PAGE_NAME"] = page_size
+        self.compare_settings["PAGE_SIZE"] = self.PAGE_SIZES[page_size]
         save_settings("compare", self.compare_settings)
 
     def set_output_path(self, option: str):
         if option == "Source Path":
-            self.OUTPUT_PATH = None
+            self.compare_settings["OUTPUT_PATH"] = None
         elif option == "Default Path":
-            self.OUTPUT_PATH = path.expanduser("~\\Documents")
+            self.compare_settings["OUTPUT_PATH"] = path.expanduser("~\\Documents")
         else:
-            self.OUTPUT_PATH = self.specified_entry.text()
-            self.OUTPUT_PATH.replace("\\", "\\\\")
-            self.OUTPUT_PATH += "\\"
+            self.compare_settings["OUTPUT_PATH"] = self.specified_entry.text()
+            self.compare_settings["OUTPUT_PATH"] = self.compare_settings["OUTPUT_PATH"].replace("\\", "\\\\")
+            self.compare_settings["OUTPUT_PATH"] += "\\"
         save_settings("compare", self.compare_settings)
 
     def set_output_images(self, state: int):
         checkbox = self.sender()
         if state == 2:
-            self.INCLUDE_IMAGES[checkbox.text()] = True
+            self.compare_settings["INCLUDE_IMAGES"][checkbox.text()] = True
         else:
-            self.INCLUDE_IMAGES[checkbox.text()] = False
+            self.compare_settings["INCLUDE_IMAGES"][checkbox.text()] = False
         save_settings("compare", self.compare_settings)
     
     def set_scaling(self, state: int):
         if state == 2:
-            self.SCALE_OUTPUT = True
+            self.compare_settings["SCALE_OUTPUT"] = True
         else:
-            self.SCALE_OUTPUT = False
+            self.compare_settings["SCALE_OUTPUT"] = False
         save_settings("compare", self.compare_settings)
                     
     def set_bw(self, state: int):
         if state == 2:
-            self.OUTPUT_BW = True
+            self.compare_settings["OUTPUT_BW"] = True
         else:
-            self.OUTPUT_BW = False
+            self.compare_settings["OUTPUT_BW"] = False
         save_settings("compare", self.compare_settings)
                     
     def set_gs(self, state: int):
         if state == 2:
-            self.OUTPUT_GS = True
+            self.compare_settings["OUTPUT_GS"] = True
         else:
-            self.OUTPUT_GS = False
+            self.compare_settings["OUTPUT_GS"] = False
         save_settings("compare", self.compare_settings)
     
     def set_reduced_filesize(self, state: int):
         if state == 2:
-            self.REDUCE_FILESIZE = True
+            self.compare_settings["REDUCE_FILESIZE"] = True
         else:
-            self.REDUCE_FILESIZE = False
+            self.compare_settings["REDUCE_FILESIZE"] = False
         save_settings("compare", self.compare_settings)
                     
     def set_main_page(self, page: str):
-        self.MAIN_PAGE = page
+        self.compare_settings["MAIN_PAGE"] = page
         save_settings("compare", self.compare_settings)

@@ -3,7 +3,6 @@ from ...config.config import INDEXES_PATH, SETTINGS_PATH, COMPUTERNAME
 from ...utils.utils import load_settings, save_settings
 
 from os import path
-from json import load, dump
 from functools import partial
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QCheckBox, QLabel, QLineEdit, QPushButton, QGroupBox, \
@@ -83,116 +82,116 @@ class SearchSettings(QWidget):
         general_group.setLayout(general_group_layout)
         how_to_search_group.setLayout(how_to_search_group_layout)
         self.setLayout(main_layout)
-        self.setStyleSheet("""
-            QLabel {
-                color: black;
-                font: 14px Arial, sans-serif;
-            }
-            QSpinBox {
-                color: black;
-                font: 14px Arial, sans-serif;
-                border: 1px solid #ccc;
-                padding: 5px;
-                background-color: #f0f0f0;
-            }
-            QComboBox { 
-                background-color: #FFFFFF; 
-                color: #333; 
-                font: 14px Arial, sans-serif;
-                border: 1px solid #CCC; 
-            }
-            QComboBox:hover { 
-                background-color: #EDEDED; 
-            }
-            QComboBox:focus { 
-                background-color: #E5E5E5; 
-            }
-            QComboBox:disabled { 
-                background-color: #FAFAFA; 
-                color: #888; 
-                border: 1px solid #CCC; 
-            }
-            QComboBox QAbstractItemView { 
-                background-color: #FFFFFF; 
-                color: #333; 
-                selection-background-color: #E0E0E0; 
-                selection-color: #333; 
-                border: 1px solid #CCC; 
-            }
-            QCheckBox {
-                color: black;
-                font: 14px Arial, sans-serif;
-            }
-            QLineEdit {
-                color: black;
-                font: 14px Arial, sans-serif;
-                border: 1px solid #ccc;
-                padding: 5px;
-                background-color: #f0f0f0;
-            }
-            QGroupBox {
-                font: 14px Arial, sans-serif;
-                border: 1px solid #ccc;
-                margin-top: 1em;
-                background-color: #f0f0f0;
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 3px 0 3px;
-            }
-            QFormLayout {
-                margin: 5px;
-                border: 1px solid #ccc;
-                background-color: #f0f0f0;
-            }
-            QWidget {
-                background-color: #f0f0f0;
-            }
-            QPushButton {
-                background-color: #f0f0f0;
-                color: black;
-                border: 2px solid #ED1D24;
-                padding: 3px 5px;
-                text-align: center;
-                text-decoration: none;
-                font-size: 14px;
-                margin: 4px 2px;
-                border-radius: 4px;
-            }
-        """)
+        # self.setStyleSheet("""
+        #     QLabel {
+        #         color: black;
+        #         font: 14px Arial, sans-serif;
+        #     }
+        #     QSpinBox {
+        #         color: black;
+        #         font: 14px Arial, sans-serif;
+        #         border: 1px solid #ccc;
+        #         padding: 5px;
+        #         background-color: #f0f0f0;
+        #     }
+        #     QComboBox { 
+        #         background-color: #FFFFFF; 
+        #         color: #333; 
+        #         font: 14px Arial, sans-serif;
+        #         border: 1px solid #CCC; 
+        #     }
+        #     QComboBox:hover { 
+        #         background-color: #EDEDED; 
+        #     }
+        #     QComboBox:focus { 
+        #         background-color: #E5E5E5; 
+        #     }
+        #     QComboBox:disabled { 
+        #         background-color: #FAFAFA; 
+        #         color: #888; 
+        #         border: 1px solid #CCC; 
+        #     }
+        #     QComboBox QAbstractItemView { 
+        #         background-color: #FFFFFF; 
+        #         color: #333; 
+        #         selection-background-color: #E0E0E0; 
+        #         selection-color: #333; 
+        #         border: 1px solid #CCC; 
+        #     }
+        #     QCheckBox {
+        #         color: black;
+        #         font: 14px Arial, sans-serif;
+        #     }
+        #     QLineEdit {
+        #         color: black;
+        #         font: 14px Arial, sans-serif;
+        #         border: 1px solid #ccc;
+        #         padding: 5px;
+        #         background-color: #f0f0f0;
+        #     }
+        #     QGroupBox {
+        #         font: 14px Arial, sans-serif;
+        #         border: 1px solid #ccc;
+        #         margin-top: 1em;
+        #         background-color: #f0f0f0;
+        #     }
+        #     QGroupBox::title {
+        #         subcontrol-origin: margin;
+        #         left: 10px;
+        #         padding: 0 3px 0 3px;
+        #     }
+        #     QFormLayout {
+        #         margin: 5px;
+        #         border: 1px solid #ccc;
+        #         background-color: #f0f0f0;
+        #     }
+        #     QWidget {
+        #         background-color: #f0f0f0;
+        #     }
+        #     QPushButton {
+        #         background-color: #f0f0f0;
+        #         color: black;
+        #         border: 2px solid #ED1D24;
+        #         padding: 3px 5px;
+        #         text-align: center;
+        #         text-decoration: none;
+        #         font-size: 14px;
+        #         margin: 4px 2px;
+        #         border-radius: 4px;
+        #     }
+        # """)
 
     def include_subfolders(self, state: int):
         if state == 2:
-            self.INCLUDE_SUBFOLDERS = True
+            self.search_settings["INCLUDE_SUBFOLDERS"] = True
         else:
-            self.INCLUDE_SUBFOLDERS = False
+            self.search_settings["INCLUDE_SUBFOLDERS"] = False
         save_settings("search", self.search_settings)
 
     def set_excluded_paths(self, paths: list):
         if paths:
-            self.EXCLUDE_PATHS = list(paths)
+            self.search_settings["EXCLUDE_PATHS"] = list(paths)
         save_settings("search", self.search_settings)
         
     def set_history_lifetime(self, time: int):
         if time:
-            self.HISTORY_LIFETIME = time * 86400
+            self.search_settings["HISTORY_LIFETIME"] = time * 86400
         save_settings("search", self.search_settings)
 
     def indexed_search(self, state: int):
         if state == 2:
-            self.INDEXED_SEARCH = True
+            self.search_settings["INDEXED_SEARCH"] = True
         else:
-            self.INDEXED_SEARCH = False
+            self.search_settings["INDEXED_SEARCH"] = False
         save_settings("search", self.search_settings)
         
     def cached_search(self, state: int):
         if state == 2:
-            self.CACHED_SEARCH = True
+            self.search_settings["CACHED_SEARCH"] = True
             with open(self.indexer_running_file, "w") as f:
                 f.write("Caching...")
         else:
-            self.CACHED_SEARCH = False
+            self.search_settings["CACHED_SEARCH"] = False
             with open(self.indexer_running_file, "w") as f:
                 f.write("Clearing Cache...")
         save_settings("search", self.search_settings)

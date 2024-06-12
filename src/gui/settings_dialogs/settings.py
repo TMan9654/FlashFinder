@@ -31,15 +31,15 @@ class SettingsDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.addWidget(self.tab_widget)
         self.setLayout(layout)
-        self.setStyleSheet("""
-            QDialog {
-                color: black;
-            }
-            QLabel {
-                color: black;
-            }
-            QSpinBox, QDoubleSpinBox {
-                color: black;
-            }
-        """)
+        # self.setStyleSheet("""
+        #     QDialog {
+        #         color: black;
+        #     }
+        #     QLabel {
+        #         color: black;
+        #     }
+        #     QSpinBox, QDoubleSpinBox {
+        #         color: black;
+        #     }
+        # """)
 

@@ -1,4 +1,7 @@
-from os import path
+from ..config.config import SETTINGS_PATH, DATA_PATH, TEMP_PATH, COMPUTERNAME
+
+from os import path, mkdir
+from json import dump, load
 
 def fix_coordinate(value: int) -> int:
     """Fixes the coordinates when calculating for multi-monitor setups."""
@@ -7,16 +10,12 @@ def fix_coordinate(value: int) -> int:
     return value
 
 def save_settings(settings_type: str, settings: dict) -> None:
-    from json import dump
     settings_path = _get_settings_path(settings_type)
-
     if settings_path:
         with open(settings_path, "w") as f:
             dump(settings, f, indent=4)
 
-
 def load_settings(settings_type: str) -> dict:
-    from json import load
     settings = None
     settings_path = _get_settings_path(settings_type)
 
@@ -30,7 +29,7 @@ def load_settings(settings_type: str) -> dict:
                         settings[key] = default_settings[key]
     if not settings:
         settings = _load_default_settings(settings_type)
-    save_settings(settings_path, settings)
+    save_settings(settings_type, settings)
     return settings
 
 def _load_default_settings(settings_type: str) -> dict:
@@ -80,12 +79,12 @@ def _load_default_settings(settings_type: str) -> dict:
         default_settings = {
             "RELOAD_MAIN_TAB": False,
             "SCROLL_TO": False,
+            "REPLACE_DUPLICATES": True,
             "EXTERNAL_DROP_MODE": "Paste"
         }
     return default_settings
 
 def _get_settings_path(settings_type: str) -> str:
-    from ..config.config import SETTINGS_PATH, COMPUTERNAME
     settings_path = None
     if settings_type == "compare":
         settings_path = path.join(SETTINGS_PATH, f"{COMPUTERNAME}_compare-settings.json") 
@@ -95,10 +94,7 @@ def _get_settings_path(settings_type: str) -> str:
         settings_path = path.join(SETTINGS_PATH, f"{COMPUTERNAME}_general-settings.json")
     return settings_path
 
-def check_config_paths() -> None:
-    from os import mkdir
-    from ..config.config import DATA_PATH, TEMP_PATH
-    
+def check_config_paths() -> None:    
     if not path.exists(DATA_PATH):
         mkdir(DATA_PATH)
     if not path.exists(TEMP_PATH):

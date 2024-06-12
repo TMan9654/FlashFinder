@@ -35,16 +35,16 @@ class Help(QWidget):
         changelog_group.setLayout(changelog_group_layout)
         self.setLayout(main_layout)
 
-        self.setStyleSheet("""
-            QLabel {
-                color: black;
-                background-color: #ffffff;
-                font: 14px Arial, sans-serif;
-            }
-            QWidget {
-                background-color: #f0f0f0;
-            }
-        """)
+        # self.setStyleSheet("""
+        #     QLabel {
+        #         color: black;
+        #         background-color: #ffffff;
+        #         font: 14px Arial, sans-serif;
+        #     }
+        #     QWidget {
+        #         background-color: #f0f0f0;
+        #     }
+        # """)
 
     def load_html_content(self, browser: QTextBrowser, filepath: str):
         if path.exists(filepath):

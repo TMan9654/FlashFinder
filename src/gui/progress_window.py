@@ -28,30 +28,21 @@ class ProgressWindow(QMainWindow):
         
         self.centralWidget.setLayout(self.layout)
         
-        # self.setStyleSheet("""
-        #     QMainWindow {
-        #         background-color: #2b2b2b;
-        #     }
-        #     QTextBrowser {
-        #         background-color: #323232;
-        #         color: #c8c8c8;
-        #         border: 1px solid #ff5e0e;
-        #         border-radius: 5px;
-        #     }
-        #     QProgressBar {
-        #         border: 1px solid #ff5e0e;
-        #         border-radius: 5px;
-        #         text-align: center;
-        #         color: #c8c8c8;
-        #         background-color: #202020;
-        #     }
-        #     QProgressBar::chunk {
-        #         background-color: #0075d5;
-        #         width: 1px;
-        #         border: 1px solid transparent;
-        #         border-radius: 5px;
-        #     }
-        # """)
+        self.setStyleSheet("""
+            QProgressBar {
+                border: 1px solid #004a88;
+                border-radius: 5px;
+                text-align: center;
+                color: #c8c8c8;
+                background-color: #202020;
+            }
+            QProgressBar::chunk {
+                background-color: #0075d5;
+                width: 1px;
+                border: 1px solid transparent;
+                border-radius: 5px;
+            }
+        """)
         
     @Slot(int)
     def update_progress(self, progress):
